@@ -5,7 +5,7 @@
 // This is the main dashboard that displays after data is uploaded
 // Students will enhance this component throughout weeks 4-10
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { RefreshCw, Download, BarChart3, PieChart, LineChart, Table, MessageCircle, FileText, Image } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,6 +16,7 @@ import ChartSection from './ChartSection';
 import InsightsPanel from './InsightsPanel';
 import ChatInterface from './ChatInterface';
 import { generateDataInsights, getDataSummary } from '@/utils/dataAnalysis';
+import { DashboardSkeleton } from './skeletons';
 
 // 🔧 WEEK 6: Import custom chart components here
 // Example: import CustomChartBuilder from './CustomChartBuilder';
@@ -35,6 +36,7 @@ interface DashboardProps {
 const Dashboard = ({ data, fileName, onReset }: DashboardProps) => {
   // 🧠 Dashboard state management
   const [activeTab, setActiveTab] = useState('overview');
+  const [isInitializing, setIsInitializing] = useState(true);
   
   // 🔧 WEEK 4: Add data processing state here
   // Example: const [filteredData, setFilteredData] = useState(data);
@@ -57,6 +59,20 @@ const Dashboard = ({ data, fileName, onReset }: DashboardProps) => {
   // 📊 Computed values - these recalculate when data changes
   const summary = useMemo(() => getDataSummary(data), [data]);
   const insights = useMemo(() => generateDataInsights(data), [data]);
+
+  // Simulate initial data processing
+  useEffect(() => {
+    setIsInitializing(true);
+    const timer = setTimeout(() => {
+      setIsInitializing(false);
+    }, 800); // Short delay to show skeleton
+    return () => clearTimeout(timer);
+  }, [data]);
+
+  // Show skeleton during initialization
+  if (isInitializing) {
+    return <DashboardSkeleton />;
+  }
 
   // Enhanced export functionality
   const handleExportCSV = () => {

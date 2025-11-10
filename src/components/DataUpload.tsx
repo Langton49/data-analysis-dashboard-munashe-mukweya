@@ -16,6 +16,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Progress } from "@/components/ui/progress";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { DataRow } from '@/types/data';
+import { UploadProgressSkeleton } from './skeletons';
 
 // 📋 Props interface - defines what data this component expects
 interface DataUploadProps {
@@ -247,6 +248,11 @@ const DataUpload = ({ onDataLoad }: DataUploadProps) => {
   };
 
   const clearError = () => setError(null);
+
+  // Show skeleton during loading
+  if (isLoading) {
+    return <UploadProgressSkeleton />;
+  }
 
   return (
     <div className="space-y-6">

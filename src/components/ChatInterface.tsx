@@ -1,11 +1,12 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Send, MessageCircle, Bot, User } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { DataRow } from '@/types/data';
 import { generateDataInsights, getDataSummary, getNumericColumns } from '@/utils/dataAnalysis';
+import { ChatSkeleton, ChatMessageSkeleton } from './skeletons';
 
 interface ChatInterfaceProps {
   data: DataRow[];
@@ -22,6 +23,21 @@ const ChatInterface = ({ data }: ChatInterfaceProps) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isInitializing, setIsInitializing] = useState(true);
+
+  // Simulate chat initialization
+  useEffect(() => {
+    setIsInitializing(true);
+    const timer = setTimeout(() => {
+      setIsInitializing(false);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [data]);
+
+  // Show skeleton during initialization
+  if (isInitializing) {
+    return <ChatSkeleton />;
+  }
 
   // Smart AI response generation based on data context
   const generateAIResponse = (userMessage: string, dataContext: DataRow[]): string => {
@@ -54,7 +70,7 @@ Would you like me to dive deeper into any specific aspect of your data?`;
         suggestions.push(`📊 **Bar Chart**: Show distribution of ${numericColumns[0]} values`);
         suggestions.push(`📈 **Line Chart**: Track trends in ${numericColumns[0]} over time`);
       }
-      
+
       return `Great question! Based on your data structure, here are some visualization recommendations:
 
 ${suggestions.join('\n')}
@@ -189,7 +205,7 @@ What would you like to explore first?`;
     // Simulate realistic AI response time
     setTimeout(() => {
       const aiResponse = generateAIResponse(currentInput, data);
-      
+
       const aiMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
         type: 'ai',
@@ -239,16 +255,14 @@ What would you like to explore first?`;
                 className={`flex gap-3 ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
               >
                 <div className={`flex gap-3 max-w-[85%] ${message.type === 'user' ? 'flex-row-reverse' : ''}`}>
-                  <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
-                    message.type === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted'
-                  }`}>
+                  <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${message.type === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted'
+                    }`}>
                     {message.type === 'user' ? <User className="h-4 w-4" /> : <Bot className="h-4 w-4" />}
                   </div>
-                  <div className={`rounded-lg p-3 ${
-                    message.type === 'user'
+                  <div className={`rounded-lg p-3 ${message.type === 'user'
                       ? 'bg-primary text-primary-foreground'
                       : 'bg-muted text-muted-foreground'
-                  }`}>
+                    }`}>
                     <div className="text-sm whitespace-pre-wrap">{message.content}</div>
                     <div className="text-xs opacity-70 mt-2">
                       {message.timestamp.toLocaleTimeString()}
@@ -258,26 +272,8 @@ What would you like to explore first?`;
               </div>
             ))
           )}
-          
-          {isLoading && (
-            <div className="flex gap-3 justify-start">
-              <div className="flex gap-3 max-w-[85%]">
-                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-muted flex items-center justify-center">
-                  <Bot className="h-4 w-4" />
-                </div>
-                <div className="bg-muted text-muted-foreground rounded-lg p-3">
-                  <div className="flex items-center gap-2">
-                    <div className="flex space-x-1">
-                      <div className="w-2 h-2 bg-current rounded-full animate-pulse"></div>
-                      <div className="w-2 h-2 bg-current rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></div>
-                      <div className="w-2 h-2 bg-current rounded-full animate-pulse" style={{ animationDelay: '0.4s' }}></div>
-                    </div>
-                    <span className="text-sm">Analyzing your data...</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
+
+          {isLoading && <ChatMessageSkeleton />}
         </div>
 
         <div className="flex gap-2">
@@ -293,15 +289,15 @@ What would you like to explore first?`;
               }
             }}
           />
-          <Button 
-            onClick={handleSendMessage} 
+          <Button
+            onClick={handleSendMessage}
             disabled={!input.trim() || isLoading}
             className="self-end"
           >
             <Send className="h-4 w-4" />
           </Button>
         </div>
-        
+
         <div className="text-xs text-muted-foreground mt-2 text-center">
           💡 Press <kbd className="bg-muted px-1 rounded">Enter</kbd> to send • <kbd className="bg-muted px-1 rounded">Shift+Enter</kbd> for new line
         </div>

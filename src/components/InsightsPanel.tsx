@@ -3,7 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { DataInsight, DataRow } from "@/types/data";
 import { Button } from "./ui/button";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { InsightsSkeleton } from "./skeletons";
 
 // 📊 Week 4-5: Smart Data Insights - Bringing Your Data to Life
 // Students - Transform raw data into meaningful stories! This component showcases professional data presentation patterns.
@@ -27,11 +28,25 @@ const InsightsPanel = ({
 	insights,
 	showAll = false,
 }: InsightsPanelProps) => {
-	const [isLoading, setIsLoading] = useState(false);
+	const [isLoading, setIsLoading] = useState(true);
 	const [aiInsight, setAiInsight] = useState<{
 		summary: string;
 		anomalies: string[];
 	}>();
+
+	// Simulate insights generation
+	useEffect(() => {
+		setIsLoading(true);
+		const timer = setTimeout(() => {
+			setIsLoading(false);
+		}, 700);
+		return () => clearTimeout(timer);
+	}, [data, insights]);
+
+	// Show skeleton while loading
+	if (isLoading) {
+		return <InsightsSkeleton count={showAll ? insights.length : 6} />;
+	}
 	// 🟢 EASY - Week 3: Icon Mapping Function
 	// TODO: Students - Understand switch statements and icon libraries
 	//

@@ -1,9 +1,10 @@
 
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
 import { DataRow } from '@/types/data';
 import { getDataSummary, getColumnValues } from '@/utils/dataAnalysis';
+import { ChartSkeleton } from './skeletons';
 
 // 📊 Week 6: Professional Data Visualization - Making Your Data Come Alive
 // Students - Transform raw data into compelling visual stories! This component showcases advanced React patterns.
@@ -25,6 +26,17 @@ interface ChartSectionProps {
 const COLORS = ['#3B82F6', '#EF4444', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899'];
 
 const ChartSection = ({ data, showAll = false }: ChartSectionProps) => {
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Simulate chart rendering time
+  useEffect(() => {
+    setIsLoading(true);
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 600);
+    return () => clearTimeout(timer);
+  }, [data, showAll]);
+
   // 🚀 React Performance Optimization - Critical for Professional Apps
   // Students - Master the useMemo hook for optimal performance
   // Why do we use useMemo here? What happens without it?
@@ -59,6 +71,11 @@ const ChartSection = ({ data, showAll = false }: ChartSectionProps) => {
       return item;
     });
   }, [data, numericColumns]);
+
+  // Show skeleton while loading
+  if (isLoading) {
+    return <ChartSkeleton count={showAll ? 3 : 1} />;
+  }
 
   // 💡 Week 3-4: Professional Error Handling
   // Students - Create helpful, actionable error messages

@@ -1,5 +1,5 @@
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Search, ArrowUpDown, ArrowUp, ArrowDown, Download, Filter } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DataRow } from '@/types/data';
 import { getDataSummary } from '@/utils/dataAnalysis';
+import { DataTableSkeleton } from './skeletons';
 
 interface DataTableProps {
   data: DataRow[];
@@ -22,6 +23,16 @@ const DataTable = ({ data }: DataTableProps) => {
   const [sortDirection, setSortDirection] = useState<SortDirection>(null);
   const [itemsPerPage, setItemsPerPage] = useState(20);
   const [columnFilter, setColumnFilter] = useState<string>('all');
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Simulate table rendering
+  useEffect(() => {
+    setIsLoading(true);
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [data]);
 
   const summary = useMemo(() => getDataSummary(data), [data]);
   const columns = useMemo(() => {
@@ -165,6 +176,11 @@ const DataTable = ({ data }: DataTableProps) => {
     Object.entries(summary.columnTypes)
       .filter(([_, type]) => type === columnFilter)
       .map(([column, _]) => column);
+
+  // Show skeleton while loading (after all hooks are called)
+  if (isLoading) {
+    return <DataTableSkeleton rows={itemsPerPage} columns={columns.length || 5} />;
+  }
 
   return (
     <Card>
