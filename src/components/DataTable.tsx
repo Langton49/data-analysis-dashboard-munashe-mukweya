@@ -1,14 +1,18 @@
 
-import { useState, useMemo, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Search, ArrowUpDown, ArrowUp, ArrowDown, Download, Filter } from 'lucide-react';
+import { useState, useMemo, useEffect, memo } from 'react';
+import { ChevronLeft, ChevronRight, Search, ArrowUpDown, ArrowUp, ArrowDown, Download, Filter, Zap } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 import { DataRow } from '@/types/data';
 import { getDataSummary } from '@/utils/dataAnalysis';
 import { DataTableSkeleton } from './skeletons';
+import { VirtualizedTable } from './VirtualizedTable';
+import { useDebounce } from '@/hooks/usePerformance';
+import { isLargeDataset } from '@/utils/performance';
 
 interface DataTableProps {
   data: DataRow[];
@@ -16,7 +20,7 @@ interface DataTableProps {
 
 type SortDirection = 'asc' | 'desc' | null;
 
-const DataTable = ({ data }: DataTableProps) => {
+const DataTable = memo(({ data }: DataTableProps) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortColumn, setSortColumn] = useState<string | null>(null);
@@ -24,6 +28,13 @@ const DataTable = ({ data }: DataTableProps) => {
   const [itemsPerPage, setItemsPerPage] = useState(20);
   const [columnFilter, setColumnFilter] = useState<string>('all');
   const [isLoading, setIsLoading] = useState(true);
+  const [useVirtualization, setUseVirtualization] = useState(false);
+
+  // Debounce search term for better performance
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
+
+  // Check if dataset is large enough to benefit from virtualization
+  const isLarge = useMemo(() => isLargeDataset(data.length), [data.length]);
 
   // Simulate table rendering
   useEffect(() => {
@@ -43,11 +54,11 @@ const DataTable = ({ data }: DataTableProps) => {
   const filteredAndSortedData = useMemo(() => {
     let filtered = data;
 
-    // Filter by search term
-    if (searchTerm) {
+    // Filter by search term (using debounced value)
+    if (debouncedSearchTerm) {
       filtered = data.filter(row => 
         Object.values(row).some(value => 
-          String(value).toLowerCase().includes(searchTerm.toLowerCase())
+          String(value).toLowerCase().includes(debouncedSearchTerm.toLowerCase())
         )
       );
     }
@@ -94,7 +105,7 @@ const DataTable = ({ data }: DataTableProps) => {
     }
 
     return filtered;
-  }, [data, searchTerm, sortColumn, sortDirection, columnFilter, summary.columnTypes]);
+  }, [data, debouncedSearchTerm, sortColumn, sortDirection, columnFilter, summary.columnTypes]);
 
   const paginatedData = useMemo(() => {
     const startIndex = (currentPage - 1) * itemsPerPage;
@@ -186,14 +197,31 @@ const DataTable = ({ data }: DataTableProps) => {
     <Card>
       <CardHeader>
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 flex-wrap">
             Data Explorer
             <span className="text-sm font-normal text-muted-foreground">
               ({filteredAndSortedData.length.toLocaleString()} of {data.length.toLocaleString()} rows)
             </span>
+            {isLarge && (
+              <Badge variant="secondary" className="flex items-center gap-1">
+                <Zap className="h-3 w-3" />
+                Large Dataset
+              </Badge>
+            )}
           </CardTitle>
           
           <div className="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
+            {isLarge && (
+              <Button
+                variant={useVirtualization ? "default" : "outline"}
+                size="sm"
+                onClick={() => setUseVirtualization(!useVirtualization)}
+                className="flex items-center gap-2"
+              >
+                <Zap className="h-4 w-4" />
+                {useVirtualization ? 'Virtual Mode' : 'Enable Virtual Scrolling'}
+              </Button>
+            )}
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               <Input
@@ -231,70 +259,81 @@ const DataTable = ({ data }: DataTableProps) => {
       </CardHeader>
       
       <CardContent>
-        <div className="rounded-md border">
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  {visibleColumns.map((column) => (
-                    <TableHead 
-                      key={column} 
-                      className="cursor-pointer hover:bg-muted/50 transition-colors select-none"
-                      onClick={() => handleSort(column)}
-                    >
-                      <div className="flex items-center justify-between min-w-[100px]">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium">{column}</span>
-                          <span className={`text-xs px-1.5 py-0.5 rounded ${
-                            getColumnType(column) === 'numeric' ? 'bg-blue-100 text-blue-700' :
-                            getColumnType(column) === 'boolean' ? 'bg-green-100 text-green-700' :
-                            'bg-gray-100 text-gray-700'
-                          }`}>
-                            {getColumnType(column)}
-                          </span>
-                        </div>
-                        {getSortIcon(column)}
-                      </div>
-                    </TableHead>
-                  ))}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {paginatedData.length === 0 ? (
-                  <TableRow>
-                    <TableCell 
-                      colSpan={visibleColumns.length} 
-                      className="text-center py-8 text-muted-foreground"
-                    >
-                      {searchTerm ? `No results found for "${searchTerm}"` : 'No data available'}
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  paginatedData.map((row, index) => (
-                    <TableRow 
-                      key={index}
-                      className="hover:bg-muted/50 transition-colors"
-                    >
+        {/* Virtualized Table for Large Datasets */}
+        {useVirtualization && isLarge ? (
+          <VirtualizedTable
+            data={filteredAndSortedData}
+            columns={visibleColumns}
+            formatValue={formatValue}
+            containerHeight={600}
+          />
+        ) : (
+          <>
+            <div className="rounded-md border">
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
                       {visibleColumns.map((column) => (
-                        <TableCell 
-                          key={column}
-                          className={`${
-                            getColumnType(column) === 'numeric' ? 'text-right font-mono' : ''
-                          }`}
+                        <TableHead 
+                          key={column} 
+                          className="cursor-pointer hover:bg-muted/50 transition-colors select-none"
+                          onClick={() => handleSort(column)}
                         >
-                          {formatValue(row[column])}
-                        </TableCell>
+                          <div className="flex items-center justify-between min-w-[100px]">
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium">{column}</span>
+                              <span className={`text-xs px-1.5 py-0.5 rounded ${
+                                getColumnType(column) === 'numeric' ? 'bg-blue-100 text-blue-700' :
+                                getColumnType(column) === 'boolean' ? 'bg-green-100 text-green-700' :
+                                'bg-gray-100 text-gray-700'
+                              }`}>
+                                {getColumnType(column)}
+                              </span>
+                            </div>
+                            {getSortIcon(column)}
+                          </div>
+                        </TableHead>
                       ))}
                     </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        </div>
+                  </TableHeader>
+                  <TableBody>
+                    {paginatedData.length === 0 ? (
+                      <TableRow>
+                        <TableCell 
+                          colSpan={visibleColumns.length} 
+                          className="text-center py-8 text-muted-foreground"
+                        >
+                          {debouncedSearchTerm ? `No results found for "${debouncedSearchTerm}"` : 'No data available'}
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      paginatedData.map((row, index) => (
+                        <TableRow 
+                          key={index}
+                          className="hover:bg-muted/50 transition-colors"
+                        >
+                          {visibleColumns.map((column) => (
+                            <TableCell 
+                              key={column}
+                              className={`${
+                                getColumnType(column) === 'numeric' ? 'text-right font-mono' : ''
+                              }`}
+                            >
+                              {formatValue(row[column])}
+                            </TableCell>
+                          ))}
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
 
-        {/* Enhanced Pagination */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-4">
+            {/* Enhanced Pagination - Hidden in virtual mode */}
+            {!useVirtualization && (
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-4">
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
             <div>
               Showing {Math.min(filteredAndSortedData.length, (currentPage - 1) * itemsPerPage + 1)} to{' '}
@@ -376,9 +415,14 @@ const DataTable = ({ data }: DataTableProps) => {
             </Button>
           </div>
         </div>
+            )}
+          </>
+        )}
       </CardContent>
     </Card>
   );
-};
+});
+
+DataTable.displayName = 'DataTable';
 
 export default DataTable;
