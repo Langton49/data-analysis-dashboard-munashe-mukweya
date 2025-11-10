@@ -13,6 +13,14 @@ import { DataTableSkeleton } from './skeletons';
 import { VirtualizedTable } from './VirtualizedTable';
 import { useDebounce } from '@/hooks/usePerformance';
 import { isLargeDataset } from '@/utils/performance';
+import { 
+  getTableAriaLabel, 
+  getPaginationAriaLabel, 
+  getSortAriaLabel,
+  getSearchAriaLabel,
+  handleKeyboardClick 
+} from '@/utils/accessibility';
+import { useScreenReaderAnnouncement } from '@/hooks/useAccessibility';
 
 interface DataTableProps {
   data: DataRow[];
@@ -35,6 +43,9 @@ const DataTable = memo(({ data }: DataTableProps) => {
 
   // Check if dataset is large enough to benefit from virtualization
   const isLarge = useMemo(() => isLargeDataset(data.length), [data.length]);
+
+  // Screen reader announcements
+  const { announce } = useScreenReaderAnnouncement();
 
   // Simulate table rendering
   useEffect(() => {
@@ -115,20 +126,31 @@ const DataTable = memo(({ data }: DataTableProps) => {
   const totalPages = Math.ceil(filteredAndSortedData.length / itemsPerPage);
 
   const handleSort = (column: string) => {
+    let newDirection: SortDirection = 'asc';
+    
     if (sortColumn === column) {
       if (sortDirection === 'asc') {
+        newDirection = 'desc';
         setSortDirection('desc');
       } else if (sortDirection === 'desc') {
+        newDirection = null;
         setSortDirection(null);
         setSortColumn(null);
+        announce(`Sorting removed from ${column} column`);
+        setCurrentPage(1);
+        return;
       } else {
+        newDirection = 'asc';
         setSortDirection('asc');
       }
     } else {
       setSortColumn(column);
       setSortDirection('asc');
     }
+    
     setCurrentPage(1);
+    const direction = newDirection === 'asc' ? 'ascending' : 'descending';
+    announce(`Table sorted by ${column} in ${direction} order`);
   };
 
   const getSortIcon = (column: string) => {
@@ -199,12 +221,12 @@ const DataTable = memo(({ data }: DataTableProps) => {
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
           <CardTitle className="flex items-center gap-2 flex-wrap">
             Data Explorer
-            <span className="text-sm font-normal text-muted-foreground">
+            <span className="text-sm font-normal text-muted-foreground" aria-label={`Showing ${filteredAndSortedData.length.toLocaleString()} of ${data.length.toLocaleString()} rows`}>
               ({filteredAndSortedData.length.toLocaleString()} of {data.length.toLocaleString()} rows)
             </span>
             {isLarge && (
-              <Badge variant="secondary" className="flex items-center gap-1">
-                <Zap className="h-3 w-3" />
+              <Badge variant="secondary" className="flex items-center gap-1" aria-label="Large dataset detected">
+                <Zap className="h-3 w-3" aria-hidden="true" />
                 Large Dataset
               </Badge>
             )}
@@ -215,16 +237,22 @@ const DataTable = memo(({ data }: DataTableProps) => {
               <Button
                 variant={useVirtualization ? "default" : "outline"}
                 size="sm"
-                onClick={() => setUseVirtualization(!useVirtualization)}
+                onClick={() => {
+                  setUseVirtualization(!useVirtualization);
+                  announce(useVirtualization ? 'Virtual scrolling disabled' : 'Virtual scrolling enabled');
+                }}
                 className="flex items-center gap-2"
+                aria-label={useVirtualization ? 'Disable virtual scrolling' : 'Enable virtual scrolling for better performance'}
+                aria-pressed={useVirtualization}
               >
-                <Zap className="h-4 w-4" />
+                <Zap className="h-4 w-4" aria-hidden="true" />
                 {useVirtualization ? 'Virtual Mode' : 'Enable Virtual Scrolling'}
               </Button>
             )}
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" aria-hidden="true" />
               <Input
+                type="search"
                 placeholder="Search all data..."
                 value={searchTerm}
                 onChange={(e) => {
@@ -232,7 +260,12 @@ const DataTable = memo(({ data }: DataTableProps) => {
                   setCurrentPage(1);
                 }}
                 className="pl-10 w-full sm:w-[250px]"
+                aria-label={getSearchAriaLabel(filteredAndSortedData.length, data.length)}
+                aria-describedby="search-description"
               />
+              <span id="search-description" className="sr-only">
+                Search through all data columns. Results update as you type.
+              </span>
             </div>
             
             <Select value={columnFilter} onValueChange={(value) => {
@@ -271,7 +304,7 @@ const DataTable = memo(({ data }: DataTableProps) => {
           <>
             <div className="rounded-md border">
               <div className="overflow-x-auto">
-                <Table>
+                <Table aria-label={getTableAriaLabel(filteredAndSortedData.length, visibleColumns.length, debouncedSearchTerm !== '')}>
                   <TableHeader>
                     <TableRow>
                       {visibleColumns.map((column) => (
@@ -279,19 +312,35 @@ const DataTable = memo(({ data }: DataTableProps) => {
                           key={column} 
                           className="cursor-pointer hover:bg-muted/50 transition-colors select-none"
                           onClick={() => handleSort(column)}
+                          onKeyDown={(e) => handleKeyboardClick(e, () => handleSort(column))}
+                          tabIndex={0}
+                          role="button"
+                          aria-label={getSortAriaLabel(column, sortColumn === column ? sortDirection : null)}
+                          aria-sort={
+                            sortColumn === column 
+                              ? sortDirection === 'asc' 
+                                ? 'ascending' 
+                                : sortDirection === 'desc'
+                                ? 'descending'
+                                : 'none'
+                              : 'none'
+                          }
                         >
                           <div className="flex items-center justify-between min-w-[100px]">
                             <div className="flex items-center gap-2">
                               <span className="font-medium">{column}</span>
-                              <span className={`text-xs px-1.5 py-0.5 rounded ${
-                                getColumnType(column) === 'numeric' ? 'bg-blue-100 text-blue-700' :
-                                getColumnType(column) === 'boolean' ? 'bg-green-100 text-green-700' :
-                                'bg-gray-100 text-gray-700'
-                              }`}>
+                              <span 
+                                className={`text-xs px-1.5 py-0.5 rounded ${
+                                  getColumnType(column) === 'numeric' ? 'bg-blue-100 text-blue-700' :
+                                  getColumnType(column) === 'boolean' ? 'bg-green-100 text-green-700' :
+                                  'bg-gray-100 text-gray-700'
+                                }`}
+                                aria-label={`Column type: ${getColumnType(column)}`}
+                              >
                                 {getColumnType(column)}
                               </span>
                             </div>
-                            {getSortIcon(column)}
+                            <span aria-hidden="true">{getSortIcon(column)}</span>
                           </div>
                         </TableHead>
                       ))}
@@ -333,88 +382,115 @@ const DataTable = memo(({ data }: DataTableProps) => {
 
             {/* Enhanced Pagination - Hidden in virtual mode */}
             {!useVirtualization && (
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-4">
-          <div className="flex items-center gap-4 text-sm text-muted-foreground">
-            <div>
-              Showing {Math.min(filteredAndSortedData.length, (currentPage - 1) * itemsPerPage + 1)} to{' '}
-              {Math.min(filteredAndSortedData.length, currentPage * itemsPerPage)} of{' '}
-              {filteredAndSortedData.length.toLocaleString()} entries
-              {searchTerm && ` (filtered from ${data.length.toLocaleString()} total)`}
-            </div>
+              <nav 
+                className="flex flex-col sm:flex-row items-center justify-between gap-4 py-4"
+                aria-label="Table pagination"
+              >
+                <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                  <div role="status" aria-live="polite" aria-atomic="true">
+                    Showing {Math.min(filteredAndSortedData.length, (currentPage - 1) * itemsPerPage + 1)} to{' '}
+                    {Math.min(filteredAndSortedData.length, currentPage * itemsPerPage)} of{' '}
+                    {filteredAndSortedData.length.toLocaleString()} entries
+                    {debouncedSearchTerm && ` (filtered from ${data.length.toLocaleString()} total)`}
+                  </div>
             
-            <Select 
-              value={itemsPerPage.toString()} 
-              onValueChange={(value) => {
-                setItemsPerPage(parseInt(value));
-                setCurrentPage(1);
-              }}
-            >
-              <SelectTrigger className="w-20">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="10">10</SelectItem>
-                <SelectItem value="20">20</SelectItem>
-                <SelectItem value="50">50</SelectItem>
-                <SelectItem value="100">100</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+                  <Select 
+                    value={itemsPerPage.toString()} 
+                    onValueChange={(value) => {
+                      const newValue = parseInt(value);
+                      setItemsPerPage(newValue);
+                      setCurrentPage(1);
+                      announce(`Showing ${newValue} rows per page`);
+                    }}
+                    aria-label="Rows per page"
+                  >
+                    <SelectTrigger className="w-20" aria-label={`${itemsPerPage} rows per page`}>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="10">10</SelectItem>
+                      <SelectItem value="20">20</SelectItem>
+                      <SelectItem value="50">50</SelectItem>
+                      <SelectItem value="100">100</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
           
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage(1)}
-              disabled={currentPage === 1}
-            >
-              First
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage(currentPage - 1)}
-              disabled={currentPage === 1}
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            
-            <div className="flex items-center gap-1">
-              <span className="text-sm">Page</span>
-              <Input
-                type="number"
-                value={currentPage}
-                onChange={(e) => {
-                  const page = parseInt(e.target.value);
-                  if (page >= 1 && page <= totalPages) {
-                    setCurrentPage(page);
-                  }
-                }}
-                className="w-16 h-8 text-center"
-                min={1}
-                max={totalPages}
-              />
-              <span className="text-sm">of {totalPages}</span>
-            </div>
-            
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage(currentPage + 1)}
-              disabled={currentPage === totalPages}
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage(totalPages)}
-              disabled={currentPage === totalPages}
-            >
-              Last
-            </Button>
-          </div>
-        </div>
+                <div className="flex items-center gap-2" role="group" aria-label="Pagination controls">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setCurrentPage(1);
+                      announce('Navigated to first page');
+                    }}
+                    disabled={currentPage === 1}
+                    aria-label="Go to first page"
+                  >
+                    First
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setCurrentPage(currentPage - 1);
+                      announce(`Navigated to page ${currentPage - 1}`);
+                    }}
+                    disabled={currentPage === 1}
+                    aria-label="Go to previous page"
+                  >
+                    <ChevronLeft className="h-4 w-4" aria-hidden="true" />
+                    <span className="sr-only">Previous</span>
+                  </Button>
+                  
+                  <div className="flex items-center gap-1">
+                    <label htmlFor="page-input" className="text-sm">Page</label>
+                    <Input
+                      id="page-input"
+                      type="number"
+                      value={currentPage}
+                      onChange={(e) => {
+                        const page = parseInt(e.target.value);
+                        if (page >= 1 && page <= totalPages) {
+                          setCurrentPage(page);
+                          announce(`Navigated to page ${page}`);
+                        }
+                      }}
+                      className="w-16 h-8 text-center"
+                      min={1}
+                      max={totalPages}
+                      aria-label={getPaginationAriaLabel(currentPage, totalPages)}
+                    />
+                    <span className="text-sm" aria-label={`of ${totalPages} pages`}>of {totalPages}</span>
+                  </div>
+                  
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setCurrentPage(currentPage + 1);
+                      announce(`Navigated to page ${currentPage + 1}`);
+                    }}
+                    disabled={currentPage === totalPages}
+                    aria-label="Go to next page"
+                  >
+                    <ChevronRight className="h-4 w-4" aria-hidden="true" />
+                    <span className="sr-only">Next</span>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setCurrentPage(totalPages);
+                      announce(`Navigated to last page, page ${totalPages}`);
+                    }}
+                    disabled={currentPage === totalPages}
+                    aria-label="Go to last page"
+                  >
+                    Last
+                  </Button>
+                </div>
+              </nav>
             )}
           </>
         )}

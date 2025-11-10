@@ -34,6 +34,9 @@ const BrokenDemoSolution = lazy(() => import("./pages/BrokenDemoSolution"));
 // Create a client for managing data queries (don't worry about this yet!)
 const queryClient = new QueryClient();
 
+// Import skip link component
+import { SkipLink } from "./components/SkipLink";
+
 // 🚀 Main App Component - This wraps your entire application
 function App() {
   return (
@@ -43,6 +46,9 @@ function App() {
     >
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
+          {/* Skip link for keyboard navigation */}
+          <SkipLink />
+          
           {/* These Toaster components handle popup notifications */}
           <Toaster />
           <Sonner />

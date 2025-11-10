@@ -1,9 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { debounce, throttle } from '@/utils/performance';
 
-/**
- * Hook for debounced values
- */
+
 export function useDebounce<T>(value: T, delay: number): T {
   const [debouncedValue, setDebouncedValue] = useState<T>(value);
 
@@ -20,9 +18,6 @@ export function useDebounce<T>(value: T, delay: number): T {
   return debouncedValue;
 }
 
-/**
- * Hook for debounced callbacks
- */
 export function useDebouncedCallback<T extends (...args: any[]) => any>(
   callback: T,
   delay: number
@@ -39,9 +34,6 @@ export function useDebouncedCallback<T extends (...args: any[]) => any>(
   );
 }
 
-/**
- * Hook for throttled callbacks
- */
 export function useThrottledCallback<T extends (...args: any[]) => any>(
   callback: T,
   limit: number
@@ -58,9 +50,6 @@ export function useThrottledCallback<T extends (...args: any[]) => any>(
   );
 }
 
-/**
- * Hook for intersection observer (lazy loading)
- */
 export function useIntersectionObserver(
   ref: React.RefObject<Element>,
   options?: IntersectionObserverInit
@@ -85,9 +74,6 @@ export function useIntersectionObserver(
   return isIntersecting;
 }
 
-/**
- * Hook for virtual scrolling calculations
- */
 export function useVirtualScroll<T>(
   items: T[],
   containerHeight: number,
@@ -99,7 +85,6 @@ export function useVirtualScroll<T>(
     const startIndex = Math.floor(scrollTop / itemHeight);
     const endIndex = Math.ceil((scrollTop + containerHeight) / itemHeight);
     
-    // Add buffer for smooth scrolling
     const buffer = 5;
     return {
       start: Math.max(0, startIndex - buffer),
@@ -127,9 +112,7 @@ export function useVirtualScroll<T>(
   };
 }
 
-/**
- * Hook to track component render count (development only)
- */
+
 export function useRenderCount(componentName: string) {
   const renderCount = useRef(0);
 
@@ -143,9 +126,7 @@ export function useRenderCount(componentName: string) {
   return renderCount.current;
 }
 
-/**
- * Hook for measuring component performance
- */
+
 export function usePerformanceMonitor(componentName: string, enabled: boolean = false) {
   const renderStartTime = useRef<number>(0);
 
@@ -163,9 +144,7 @@ export function usePerformanceMonitor(componentName: string, enabled: boolean = 
   });
 }
 
-/**
- * Hook for lazy loading images
- */
+
 export function useLazyImage(src: string): [string | undefined, boolean] {
   const [imageSrc, setImageSrc] = useState<string>();
   const [isLoaded, setIsLoaded] = useState(false);
@@ -182,9 +161,7 @@ export function useLazyImage(src: string): [string | undefined, boolean] {
   return [imageSrc, isLoaded];
 }
 
-/**
- * Hook for window size with debouncing
- */
+
 export function useWindowSize(debounceMs: number = 150) {
   const [size, setSize] = useState({
     width: window.innerWidth,

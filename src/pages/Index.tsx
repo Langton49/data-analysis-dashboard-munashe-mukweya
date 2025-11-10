@@ -44,11 +44,11 @@ const Index = () => {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
       {/* 🎨 Hero Section - The top part of your homepage */}
       <div className="container mx-auto px-4 py-8">
-        <div className="text-center mb-12">
+        <header className="text-center mb-12">
           {/* 🎯 Logo and Title */}
-          <div className="flex items-center justify-center mb-6">
+          <div className="flex items-center justify-center mb-6" role="img" aria-label="Plug-N-Learn logo">
             <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-4 rounded-full">
-              <Database className="h-12 w-12 text-white" />
+              <Database className="h-12 w-12 text-white" aria-hidden="true" />
             </div>
           </div>
           
@@ -56,7 +56,7 @@ const Index = () => {
           <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-4">
             Plug-N-Learn
           </h1>
-          <p className="text-xl text-slate-600 mb-2">Data Insight Engine</p>
+          <p className="text-xl text-slate-600 mb-2" role="doc-subtitle">Data Insight Engine</p>
           <p className="text-lg text-slate-500 max-w-2xl mx-auto">
             Upload your dataset and instantly discover insights, visualize trends, and explore your data with interactive charts and analytics.
           </p>
@@ -64,94 +64,98 @@ const Index = () => {
           {/* <div className="mt-8 mb-8 flex justify-center">
             <NameInput />
           </div> */}
-        </div>
 
-        {/* 🔧 WEEK 2: ADD YOUR PROGRESS COMPONENT HERE! */}
-        {/* This is where students will add their UploadProgressSimulator component */}
-        {/* Example: */}
-        {/* <div className="mb-8">
-          <UploadProgressSimulator />
-        </div> */}
+          {/* 🔧 WEEK 2: ADD YOUR PROGRESS COMPONENT HERE! */}
+          {/* This is where students will add their UploadProgressSimulator component */}
+          {/* Example: */}
+          {/* <div className="mb-8">
+            <UploadProgressSimulator />
+          </div> */}
+        </header>
 
-        {data.length === 0 ? (
-          <>
-            {/* 🎨 Features Grid - Shows what your app can do */}
-            <div className="grid md:grid-cols-3 gap-6 mb-12">
-              {/* 📤 Upload Feature Card */}
-              <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 bg-white/70 backdrop-blur-sm">
-                <CardHeader className="text-center">
-                  <div className="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Upload className="h-8 w-8 text-blue-600" />
-                  </div>
-                  <CardTitle className="text-xl">Easy Data Upload</CardTitle>
-                  <CardDescription>
-                    Simply drag and drop your CSV files or click to browse. Support for various data formats.
-                  </CardDescription>
-                </CardHeader>
-              </Card>
+        <main id="main-content" tabIndex={-1}>
+          {data.length === 0 ? (
+            <>
+              {/* 🎨 Features Grid - Shows what your app can do */}
+              <section aria-label="Features" className="grid md:grid-cols-3 gap-6 mb-12">
+                {/* 📤 Upload Feature Card */}
+                <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 bg-white/70 backdrop-blur-sm" role="article">
+                  <CardHeader className="text-center">
+                    <div className="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" role="img" aria-label="Upload icon">
+                      <Upload className="h-8 w-8 text-blue-600" aria-hidden="true" />
+                    </div>
+                    <CardTitle className="text-xl">Easy Data Upload</CardTitle>
+                    <CardDescription>
+                      Simply drag and drop your CSV files or click to browse. Support for various data formats.
+                    </CardDescription>
+                  </CardHeader>
+                </Card>
 
-              {/* 📊 Charts Feature Card */}
-              <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 bg-white/70 backdrop-blur-sm">
-                <CardHeader className="text-center">
-                  <div className="bg-indigo-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <BarChart3 className="h-8 w-8 text-indigo-600" />
-                  </div>
-                  <CardTitle className="text-xl">Interactive Charts</CardTitle>
-                  <CardDescription>
-                    Automatically generate bar charts, line graphs, pie charts, and more from your data.
-                  </CardDescription>
-                </CardHeader>
-              </Card>
+                {/* 📊 Charts Feature Card */}
+                <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 bg-white/70 backdrop-blur-sm" role="article">
+                  <CardHeader className="text-center">
+                    <div className="bg-indigo-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" role="img" aria-label="Charts icon">
+                      <BarChart3 className="h-8 w-8 text-indigo-600" aria-hidden="true" />
+                    </div>
+                    <CardTitle className="text-xl">Interactive Charts</CardTitle>
+                    <CardDescription>
+                      Automatically generate bar charts, line graphs, pie charts, and more from your data.
+                    </CardDescription>
+                  </CardHeader>
+                </Card>
 
-              {/* 🧠 Insights Feature Card */}
-              <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 bg-white/70 backdrop-blur-sm">
-                <CardHeader className="text-center">
-                  <div className="bg-teal-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <TrendingUp className="h-8 w-8 text-teal-600" />
-                  </div>
-                  <CardTitle className="text-xl">Smart Insights</CardTitle>
-                  <CardDescription>
-                    Discover patterns, trends, and statistical insights automatically generated from your dataset.
-                  </CardDescription>
-                </CardHeader>
-              </Card>
-            </div>
+                {/* 🧠 Insights Feature Card */}
+                <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 bg-white/70 backdrop-blur-sm" role="article">
+                  <CardHeader className="text-center">
+                    <div className="bg-teal-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" role="img" aria-label="Insights icon">
+                      <TrendingUp className="h-8 w-8 text-teal-600" aria-hidden="true" />
+                    </div>
+                    <CardTitle className="text-xl">Smart Insights</CardTitle>
+                    <CardDescription>
+                      Discover patterns, trends, and statistical insights automatically generated from your dataset.
+                    </CardDescription>
+                  </CardHeader>
+                </Card>
+              </section>
 
-            {/* 📤 Upload Section - Where users upload their data */}
-            <Card className="border-0 shadow-xl bg-white/80 backdrop-blur-sm max-w-2xl mx-auto">
-              <CardHeader className="text-center">
-                <CardTitle className="text-2xl">Get Started</CardTitle>
-                <CardDescription>
-                  Upload your CSV file to begin exploring your data
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ErrorBoundary
-                  FallbackComponent={(props) => (
-                    <InlineErrorFallback {...props} message="Unable to load file uploader. Please refresh the page." />
-                  )}
-                >
-                  <DataUpload onDataLoad={handleDataLoad} />
-                </ErrorBoundary>
-              </CardContent>
-            </Card>
-          </>
-        ) : (
-          <ErrorBoundary
-            FallbackComponent={(props) => (
-              <InlineErrorFallback {...props} message="Unable to display dashboard. Please try uploading your data again." />
-            )}
-            onReset={() => {
-              setData([]);
-              setFileName('');
-            }}
-          >
-            <Dashboard data={data} fileName={fileName} onReset={() => {
-              setData([]);
-              setFileName('');
-            }} />
-          </ErrorBoundary>
-        )}
+              {/* 📤 Upload Section - Where users upload their data */}
+              <section aria-label="Data upload" className="max-w-2xl mx-auto">
+                <Card className="border-0 shadow-xl bg-white/80 backdrop-blur-sm">
+                  <CardHeader className="text-center">
+                    <CardTitle className="text-2xl">Get Started</CardTitle>
+                    <CardDescription>
+                      Upload your CSV file to begin exploring your data
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <ErrorBoundary
+                      FallbackComponent={(props) => (
+                        <InlineErrorFallback {...props} message="Unable to load file uploader. Please refresh the page." />
+                      )}
+                    >
+                      <DataUpload onDataLoad={handleDataLoad} />
+                    </ErrorBoundary>
+                  </CardContent>
+                </Card>
+              </section>
+            </>
+          ) : (
+            <ErrorBoundary
+              FallbackComponent={(props) => (
+                <InlineErrorFallback {...props} message="Unable to display dashboard. Please try uploading your data again." />
+              )}
+              onReset={() => {
+                setData([]);
+                setFileName('');
+              }}
+            >
+              <Dashboard data={data} fileName={fileName} onReset={() => {
+                setData([]);
+                setFileName('');
+              }} />
+            </ErrorBoundary>
+          )}
+        </main>
       </div>
     </div>
   );
