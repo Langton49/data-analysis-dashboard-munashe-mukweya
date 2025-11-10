@@ -7,6 +7,7 @@
 
 // 📦 React imports - the core tools for building components
 import { useState } from 'react';
+import { ErrorBoundary } from 'react-error-boundary';
 
 // 🎨 Icon imports - beautiful icons for your UI
 import { Upload, BarChart3, PieChart, TrendingUp, Database } from 'lucide-react';
@@ -19,6 +20,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import DataUpload from '@/components/DataUpload';
 import Dashboard from '@/components/Dashboard';
 import { DataRow } from '@/types/data';
+import { InlineErrorFallback } from '@/components/ErrorFallback';
 // 🆕 WEEK 3: Import NameInput demo
 // import NameInput from '@/components/NameInput';
 
@@ -124,17 +126,31 @@ const Index = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <DataUpload onDataLoad={handleDataLoad} />
+                <ErrorBoundary
+                  FallbackComponent={(props) => (
+                    <InlineErrorFallback {...props} message="Unable to load file uploader. Please refresh the page." />
+                  )}
+                >
+                  <DataUpload onDataLoad={handleDataLoad} />
+                </ErrorBoundary>
               </CardContent>
             </Card>
           </>
         ) : (
-          <>
+          <ErrorBoundary
+            FallbackComponent={(props) => (
+              <InlineErrorFallback {...props} message="Unable to display dashboard. Please try uploading your data again." />
+            )}
+            onReset={() => {
+              setData([]);
+              setFileName('');
+            }}
+          >
             <Dashboard data={data} fileName={fileName} onReset={() => {
               setData([]);
               setFileName('');
             }} />
-          </>
+          </ErrorBoundary>
         )}
       </div>
     </div>
