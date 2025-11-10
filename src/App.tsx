@@ -36,6 +36,7 @@ const queryClient = new QueryClient();
 
 // Import skip link component
 import { SkipLink } from "./components/SkipLink";
+import { ThemeProvider } from "./components/ThemeProvider";
 
 // 🚀 Main App Component - This wraps your entire application
 function App() {
@@ -44,14 +45,15 @@ function App() {
       FallbackComponent={ErrorFallback}
       onReset={() => window.location.reload()}
     >
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          {/* Skip link for keyboard navigation */}
-          <SkipLink />
-          
-          {/* These Toaster components handle popup notifications */}
-          <Toaster />
-          <Sonner />
+      <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+        <QueryClientProvider client={queryClient}>
+          <TooltipProvider>
+            {/* Skip link for keyboard navigation */}
+            <SkipLink />
+            
+            {/* These Toaster components handle popup notifications */}
+            <Toaster />
+            <Sonner />
 
           {/* 🧭 Router setup - manages which page to show */}
           <BrowserRouter>
@@ -101,6 +103,7 @@ function App() {
           </BrowserRouter>
         </TooltipProvider>
       </QueryClientProvider>
+      </ThemeProvider>
     </ErrorBoundary>
   );
 }

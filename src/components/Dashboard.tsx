@@ -17,6 +17,7 @@ import InsightsPanel from './InsightsPanel';
 import ChatInterface from './ChatInterface';
 import { generateDataInsights, getDataSummary } from '@/utils/dataAnalysis';
 import { DashboardSkeleton } from './skeletons';
+import { ThemeToggle } from './ThemeToggle';
 
 // 🔧 WEEK 6: Import custom chart components here
 // Example: import CustomChartBuilder from './CustomChartBuilder';
@@ -148,9 +149,12 @@ ${Object.entries(summary.columnTypes)
     <div className="space-y-6">
       {/* Enhanced Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h2 className="text-3xl font-bold text-gray-900">Data Analysis Dashboard</h2>
-          <div className="flex items-center gap-4 text-sm text-gray-600 mt-1">
+        <div className="flex-1">
+          <div className="flex items-center gap-4">
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Data Analysis Dashboard</h2>
+            <ThemeToggle />
+          </div>
+          <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400 mt-1">
             <span className="flex items-center gap-1">
               <FileText className="h-4 w-4" />
               <span className="font-semibold">{fileName}</span>
@@ -178,50 +182,50 @@ ${Object.entries(summary.columnTypes)
 
       {/* Enhanced Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
+        <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 border-blue-200 dark:border-blue-800">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-blue-600">Total Records</CardTitle>
-            <BarChart3 className="h-4 w-4 text-blue-800" />
+            <CardTitle className="text-sm font-medium text-blue-600 dark:text-blue-400">Total Records</CardTitle>
+            <BarChart3 className="h-4 w-4 text-blue-800 dark:text-blue-300" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-900">{summary.totalRows.toLocaleString()}</div>
-            <p className="text-xs text-blue-600 mt-1">rows of data</p>
+            <div className="text-2xl font-bold text-blue-900 dark:text-blue-100">{summary.totalRows.toLocaleString()}</div>
+            <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">rows of data</p>
           </CardContent>
         </Card>
         
-        <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
+        <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900 border-green-200 dark:border-green-800">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-green-800">Data Columns</CardTitle>
-            <Table className="h-4 w-4 text-green-600" />
+            <CardTitle className="text-sm font-medium text-green-800 dark:text-green-400">Data Columns</CardTitle>
+            <Table className="h-4 w-4 text-green-600 dark:text-green-300" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-900">{summary.totalColumns}</div>
-            <p className="text-xs text-green-600 mt-1">total fields</p>
+            <div className="text-2xl font-bold text-green-900 dark:text-green-100">{summary.totalColumns}</div>
+            <p className="text-xs text-green-600 dark:text-green-400 mt-1">total fields</p>
           </CardContent>
         </Card>
         
-        <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
+        <Card className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950 dark:to-purple-900 border-purple-200 dark:border-purple-800">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-purple-800">Numeric Fields</CardTitle>
-            <LineChart className="h-4 w-4 text-purple-600" />
+            <CardTitle className="text-sm font-medium text-purple-800 dark:text-purple-400">Numeric Fields</CardTitle>
+            <LineChart className="h-4 w-4 text-purple-600 dark:text-purple-300" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-purple-900">{summary.numericColumns}</div>
-            <p className="text-xs text-purple-600 mt-1">for analysis</p>
+            <div className="text-2xl font-bold text-purple-900 dark:text-purple-100">{summary.numericColumns}</div>
+            <p className="text-xs text-purple-600 dark:text-purple-400 mt-1">for analysis</p>
           </CardContent>
         </Card>
         
-        <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200">
+        <Card className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950 dark:to-orange-900 border-orange-200 dark:border-orange-800">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-orange-800">Data Quality</CardTitle>
-            <PieChart className="h-4 w-4 text-orange-600" />
+            <CardTitle className="text-sm font-medium text-orange-800 dark:text-orange-400">Data Quality</CardTitle>
+            <PieChart className="h-4 w-4 text-orange-600 dark:text-orange-300" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-orange-900">
+            <div className="text-2xl font-bold text-orange-900 dark:text-orange-100">
               {Object.values(summary.missingValues).every(count => count === 0) ? '100%' : 
                `${(100 - (Object.values(summary.missingValues).reduce((a, b) => a + b, 0) / (summary.totalRows * summary.totalColumns) * 100)).toFixed(1)}%`}
             </div>
-            <p className="text-xs text-orange-600 mt-1">complete data</p>
+            <p className="text-xs text-orange-600 dark:text-orange-400 mt-1">complete data</p>
           </CardContent>
         </Card>
       </div>

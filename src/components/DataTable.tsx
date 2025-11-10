@@ -250,7 +250,7 @@ const DataTable = memo(({ data }: DataTableProps) => {
               </Button>
             )}
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" aria-hidden="true" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500" aria-hidden="true" />
               <Input
                 type="search"
                 placeholder="Search all data..."
@@ -331,9 +331,9 @@ const DataTable = memo(({ data }: DataTableProps) => {
                               <span className="font-medium">{column}</span>
                               <span 
                                 className={`text-xs px-1.5 py-0.5 rounded ${
-                                  getColumnType(column) === 'numeric' ? 'bg-blue-100 text-blue-700' :
-                                  getColumnType(column) === 'boolean' ? 'bg-green-100 text-green-700' :
-                                  'bg-gray-100 text-gray-700'
+                                  getColumnType(column) === 'numeric' ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300' :
+                                  getColumnType(column) === 'boolean' ? 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300' :
+                                  'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'
                                 }`}
                                 aria-label={`Column type: ${getColumnType(column)}`}
                               >

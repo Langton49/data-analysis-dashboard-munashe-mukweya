@@ -172,9 +172,9 @@ const InsightsPanel = ({
 					{isLoading ? "Generating..." : "Generate AI Insight"}
 				</Button>
 				{aiInsight && (
-					<div className="my-4 border rounded-lg p-4 hover:bg-gray-50 transition-colors">
-						<h4 className="font-medium text-gray-900 mb-1">AI Insight</h4>
-						<p className="text-sm text-gray-600 mb-2 text-balance">
+					<div className="my-4 border rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+						<h4 className="font-medium text-gray-900 dark:text-gray-100 mb-1">AI Insight</h4>
+						<p className="text-sm text-gray-600 dark:text-gray-400 mb-2 text-balance">
 							{aiInsight.summary}
 						</p>
 						<ul className="list-disc list-inside text-sm text-gray-600 mb-2 text-balance">
@@ -217,7 +217,7 @@ const InsightsPanel = ({
 										{getInsightIcon(insight.type)}
 									</div>
 									<div className="flex-1">
-										<h4 className="font-medium text-gray-900 mb-1">
+										<h4 className="font-medium text-gray-900 dark:text-gray-100 mb-1">
 											{insight.title}
 										</h4>
 										<p className="text-sm text-gray-600 mb-2">
