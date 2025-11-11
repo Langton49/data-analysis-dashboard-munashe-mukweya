@@ -44,94 +44,93 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
-      {/* 🎨 Hero Section - The top part of your homepage */}
-      <div className="container mx-auto px-4 py-8">
-        {/* Theme toggle in top right */}
-        <div className="flex justify-end mb-4">
-          <ThemeToggle />
-        </div>
-        
-        <header className="text-center mb-12">
-          {/* 🎯 Logo and Title */}
-          <div className="flex items-center justify-center mb-6" role="img" aria-label="Plug-N-Learn logo">
-            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-4 rounded-full">
-              <Database className="h-12 w-12 text-white" aria-hidden="true" />
-            </div>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+      {data.length === 0 ? (
+        /* 🎨 Hero Section - The top part of your homepage */
+        <div className="container mx-auto px-4 py-8">
+          {/* Theme toggle in top right */}
+          <div className="flex justify-end mb-4">
+            <ThemeToggle />
           </div>
           
-          {/* 📝 WEEK 1: Students customize this title with their name */}
-          <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent mb-4">
-            Plug-N-Learn
-          </h1>
-          <p className="text-xl text-slate-600 dark:text-slate-300 mb-2" role="doc-subtitle">Data Insight Engine</p>
-          <p className="text-lg text-slate-500 dark:text-slate-400 max-w-2xl mx-auto">
-            Upload your dataset and instantly discover insights, visualize trends, and explore your data with interactive charts and analytics.
-          </p>
-          {/* 🆕 WEEK 3: Live Event Handling Demo (removed NameInput from homepage) */}
-          {/* <div className="mt-8 mb-8 flex justify-center">
-            <NameInput />
-          </div> */}
+          <header className="text-center mb-12">
+            {/* 🎯 Logo and Title */}
+            <div className="flex items-center justify-center mb-6" role="img" aria-label="Data Visualizer logo">
+              <div className="bg-gray-900 dark:bg-gray-100 p-4 rounded-lg">
+                <Database className="h-12 w-12 text-white dark:text-gray-900" aria-hidden="true" />
+              </div>
+            </div>
+            
+            {/* 📝 WEEK 1: Students customize this title with their name */}
+            <h1 className="text-5xl font-light tracking-tight text-gray-900 dark:text-gray-100 mb-4">
+              Data Visualizer
+            </h1>
+            <p className="text-xl font-light text-gray-500 dark:text-gray-400 mb-2" role="doc-subtitle">Interactive Data Analysis</p>
+            <p className="text-lg font-light text-gray-500 dark:text-gray-400 max-w-2xl mx-auto">
+              Upload your dataset and instantly discover insights, visualize trends, and explore your data with interactive charts and analytics.
+            </p>
+            {/* 🆕 WEEK 3: Live Event Handling Demo (removed NameInput from homepage) */}
+            {/* <div className="mt-8 mb-8 flex justify-center">
+              <NameInput />
+            </div> */}
 
-          {/* 🔧 WEEK 2: ADD YOUR PROGRESS COMPONENT HERE! */}
-          {/* This is where students will add their UploadProgressSimulator component */}
-          {/* Example: */}
-          {/* <div className="mb-8">
-            <UploadProgressSimulator />
-          </div> */}
-        </header>
+            {/* 🔧 WEEK 2: ADD YOUR PROGRESS COMPONENT HERE! */}
+            {/* This is where students will add their UploadProgressSimulator component */}
+            {/* Example: */}
+            {/* <div className="mb-8">
+              <UploadProgressSimulator />
+            </div> */}
+          </header>
 
-        <main id="main-content" tabIndex={-1}>
-          {data.length === 0 ? (
-            <>
-              {/* 🎨 Features Grid - Shows what your app can do */}
-              <section aria-label="Features" className="grid md:grid-cols-3 gap-6 mb-12">
+          <main id="main-content" tabIndex={-1}>
+            {/* 🎨 Features Grid - Shows what your app can do */}
+            <section aria-label="Features" className="grid md:grid-cols-3 gap-4 mb-12">
                 {/* 📤 Upload Feature Card */}
-                <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm" role="article">
+                <Card className="border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700 transition-colors" role="article">
                   <CardHeader className="text-center">
-                    <div className="bg-blue-100 dark:bg-blue-900/50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" role="img" aria-label="Upload icon">
-                      <Upload className="h-8 w-8 text-blue-600 dark:text-blue-400" aria-hidden="true" />
+                    <div className="bg-gray-100 dark:bg-gray-800 w-16 h-16 rounded-lg flex items-center justify-center mx-auto mb-4" role="img" aria-label="Upload icon">
+                      <Upload className="h-8 w-8 text-gray-700 dark:text-gray-300" aria-hidden="true" />
                     </div>
-                    <CardTitle className="text-xl">Easy Data Upload</CardTitle>
-                    <CardDescription>
+                    <CardTitle className="text-xl font-light">Easy Data Upload</CardTitle>
+                    <CardDescription className="font-light">
                       Simply drag and drop your CSV files or click to browse. Support for various data formats.
                     </CardDescription>
                   </CardHeader>
                 </Card>
 
                 {/* 📊 Charts Feature Card */}
-                <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm" role="article">
+                <Card className="border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700 transition-colors" role="article">
                   <CardHeader className="text-center">
-                    <div className="bg-indigo-100 dark:bg-indigo-900/50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" role="img" aria-label="Charts icon">
-                      <BarChart3 className="h-8 w-8 text-indigo-600 dark:text-indigo-400" aria-hidden="true" />
+                    <div className="bg-gray-100 dark:bg-gray-800 w-16 h-16 rounded-lg flex items-center justify-center mx-auto mb-4" role="img" aria-label="Charts icon">
+                      <BarChart3 className="h-8 w-8 text-gray-700 dark:text-gray-300" aria-hidden="true" />
                     </div>
-                    <CardTitle className="text-xl">Interactive Charts</CardTitle>
-                    <CardDescription>
+                    <CardTitle className="text-xl font-light">Interactive Charts</CardTitle>
+                    <CardDescription className="font-light">
                       Automatically generate bar charts, line graphs, pie charts, and more from your data.
                     </CardDescription>
                   </CardHeader>
                 </Card>
 
                 {/* 🧠 Insights Feature Card */}
-                <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm" role="article">
+                <Card className="border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700 transition-colors" role="article">
                   <CardHeader className="text-center">
-                    <div className="bg-teal-100 dark:bg-teal-900/50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" role="img" aria-label="Insights icon">
-                      <TrendingUp className="h-8 w-8 text-teal-600 dark:text-teal-400" aria-hidden="true" />
+                    <div className="bg-gray-100 dark:bg-gray-800 w-16 h-16 rounded-lg flex items-center justify-center mx-auto mb-4" role="img" aria-label="Insights icon">
+                      <TrendingUp className="h-8 w-8 text-gray-700 dark:text-gray-300" aria-hidden="true" />
                     </div>
-                    <CardTitle className="text-xl">Smart Insights</CardTitle>
-                    <CardDescription>
+                    <CardTitle className="text-xl font-light">Smart Insights</CardTitle>
+                    <CardDescription className="font-light">
                       Discover patterns, trends, and statistical insights automatically generated from your dataset.
                     </CardDescription>
                   </CardHeader>
                 </Card>
-              </section>
+            </section>
 
-              {/* 📤 Upload Section - Where users upload their data */}
-              <section aria-label="Data upload" className="max-w-2xl mx-auto">
-                <Card className="border-0 shadow-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
+            {/* 📤 Upload Section - Where users upload their data */}
+            <section aria-label="Data upload" className="max-w-2xl mx-auto">
+                <Card className="border-gray-200 dark:border-gray-800">
                   <CardHeader className="text-center">
-                    <CardTitle className="text-2xl">Get Started</CardTitle>
-                    <CardDescription>
+                    <CardTitle className="text-2xl font-light">Get Started</CardTitle>
+                    <CardDescription className="font-light">
                       Upload your CSV file to begin exploring your data
                     </CardDescription>
                   </CardHeader>
@@ -145,26 +144,25 @@ const Index = () => {
                     </ErrorBoundary>
                   </CardContent>
                 </Card>
-              </section>
-            </>
-          ) : (
-            <ErrorBoundary
-              FallbackComponent={(props) => (
-                <InlineErrorFallback {...props} message="Unable to display dashboard. Please try uploading your data again." />
-              )}
-              onReset={() => {
-                setData([]);
-                setFileName('');
-              }}
-            >
-              <Dashboard data={data} fileName={fileName} onReset={() => {
-                setData([]);
-                setFileName('');
-              }} />
-            </ErrorBoundary>
+            </section>
+          </main>
+        </div>
+      ) : (
+        <ErrorBoundary
+          FallbackComponent={(props) => (
+            <InlineErrorFallback {...props} message="Unable to display dashboard. Please try uploading your data again." />
           )}
-        </main>
-      </div>
+          onReset={() => {
+            setData([]);
+            setFileName('');
+          }}
+        >
+          <Dashboard data={data} fileName={fileName} onReset={() => {
+            setData([]);
+            setFileName('');
+          }} />
+        </ErrorBoundary>
+      )}
     </div>
   );
 };

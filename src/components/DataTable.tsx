@@ -219,15 +219,15 @@ const DataTable = memo(({ data }: DataTableProps) => {
     <Card>
       <CardHeader>
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-          <CardTitle className="flex items-center gap-2 flex-wrap">
-            Data Explorer
-            <span className="text-sm font-normal text-muted-foreground" aria-label={`Showing ${filteredAndSortedData.length.toLocaleString()} of ${data.length.toLocaleString()} rows`}>
+          <CardTitle className="flex items-center gap-2 flex-wrap text-base font-light">
+            Data Table
+            <span className="text-xs font-light text-gray-500 dark:text-gray-500" aria-label={`Showing ${filteredAndSortedData.length.toLocaleString()} of ${data.length.toLocaleString()} rows`}>
               ({filteredAndSortedData.length.toLocaleString()} of {data.length.toLocaleString()} rows)
             </span>
             {isLarge && (
-              <Badge variant="secondary" className="flex items-center gap-1" aria-label="Large dataset detected">
+              <Badge variant="secondary" className="flex items-center gap-1 font-light text-xs" aria-label="Large dataset detected">
                 <Zap className="h-3 w-3" aria-hidden="true" />
-                Large Dataset
+                Large
               </Badge>
             )}
           </CardTitle>
@@ -302,15 +302,37 @@ const DataTable = memo(({ data }: DataTableProps) => {
           />
         ) : (
           <>
-            <div className="rounded-md border">
-              <div className="overflow-x-auto">
-                <Table aria-label={getTableAriaLabel(filteredAndSortedData.length, visibleColumns.length, debouncedSearchTerm !== '')}>
+            {/* Scrollable Table Container with Accessibility */}
+            <div 
+              className="rounded-md border border-gray-200 dark:border-gray-800 relative overflow-hidden"
+              role="region"
+              aria-label="Scrollable data table"
+              tabIndex={0}
+            >
+              {/* Scroll hint for screen readers */}
+              <div className="sr-only" aria-live="polite">
+                Use arrow keys or swipe to scroll horizontally through the table
+              </div>
+              
+              {/* Horizontal scroll container with fixed width */}
+              <div 
+                className="overflow-x-auto overflow-y-visible"
+                style={{ 
+                  scrollbarWidth: 'thin',
+                  scrollbarColor: 'rgb(156 163 175) transparent',
+                  maxWidth: '100%'
+                }}
+              >
+                <Table 
+                  aria-label={getTableAriaLabel(filteredAndSortedData.length, visibleColumns.length, debouncedSearchTerm !== '')}
+                  style={{ tableLayout: 'fixed', width: `${visibleColumns.length * 150}px`, minWidth: '100%' }}
+                >
                   <TableHeader>
                     <TableRow>
                       {visibleColumns.map((column) => (
                         <TableHead 
                           key={column} 
-                          className="cursor-pointer hover:bg-muted/50 transition-colors select-none"
+                          className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors select-none whitespace-nowrap"
                           onClick={() => handleSort(column)}
                           onKeyDown={(e) => handleKeyboardClick(e, () => handleSort(column))}
                           tabIndex={0}
@@ -325,22 +347,11 @@ const DataTable = memo(({ data }: DataTableProps) => {
                                 : 'none'
                               : 'none'
                           }
+                          style={{ width: '150px', maxWidth: '200px' }}
                         >
-                          <div className="flex items-center justify-between min-w-[100px]">
-                            <div className="flex items-center gap-2">
-                              <span className="font-medium">{column}</span>
-                              <span 
-                                className={`text-xs px-1.5 py-0.5 rounded ${
-                                  getColumnType(column) === 'numeric' ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300' :
-                                  getColumnType(column) === 'boolean' ? 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300' :
-                                  'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'
-                                }`}
-                                aria-label={`Column type: ${getColumnType(column)}`}
-                              >
-                                {getColumnType(column)}
-                              </span>
-                            </div>
-                            <span aria-hidden="true">{getSortIcon(column)}</span>
+                          <div className="flex items-center justify-between gap-2 pr-2">
+                            <span className="font-light text-sm truncate">{column}</span>
+                            <span aria-hidden="true" className="flex-shrink-0">{getSortIcon(column)}</span>
                           </div>
                         </TableHead>
                       ))}
@@ -351,7 +362,7 @@ const DataTable = memo(({ data }: DataTableProps) => {
                       <TableRow>
                         <TableCell 
                           colSpan={visibleColumns.length} 
-                          className="text-center py-8 text-muted-foreground"
+                          className="text-center py-8 text-gray-400 dark:text-gray-600 font-light"
                         >
                           {debouncedSearchTerm ? `No results found for "${debouncedSearchTerm}"` : 'No data available'}
                         </TableCell>
@@ -360,16 +371,19 @@ const DataTable = memo(({ data }: DataTableProps) => {
                       paginatedData.map((row, index) => (
                         <TableRow 
                           key={index}
-                          className="hover:bg-muted/50 transition-colors"
+                          className="hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors"
                         >
                           {visibleColumns.map((column) => (
                             <TableCell 
                               key={column}
-                              className={`${
+                              className={`whitespace-nowrap font-light text-sm ${
                                 getColumnType(column) === 'numeric' ? 'text-right font-mono' : ''
                               }`}
+                              style={{ width: '150px', maxWidth: '200px' }}
                             >
-                              {formatValue(row[column])}
+                              <div className="truncate" title={String(formatValue(row[column]))}>
+                                {formatValue(row[column])}
+                              </div>
                             </TableCell>
                           ))}
                         </TableRow>
@@ -378,6 +392,11 @@ const DataTable = memo(({ data }: DataTableProps) => {
                   </TableBody>
                 </Table>
               </div>
+              
+              {/* Visual scroll indicator */}
+              {visibleColumns.length > 3 && (
+                <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-white dark:from-gray-950 to-transparent pointer-events-none" aria-hidden="true" />
+              )}
             </div>
 
             {/* Enhanced Pagination - Hidden in virtual mode */}

@@ -1,16 +1,16 @@
 
-import { useState, useEffect } from 'react';
-import { Send, MessageCircle, Bot, User } from 'lucide-react';
+import { useState, useEffect, useRef, useMemo } from 'react';
+import { Send, Bot, User, AlertCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { DataRow } from '@/types/data';
 import { generateDataInsights, getDataSummary, getNumericColumns } from '@/utils/dataAnalysis';
 import { ChatSkeleton, ChatMessageSkeleton } from './skeletons';
-
-interface ChatInterfaceProps {
-  data: DataRow[];
-}
+import { generateSystemPrompt, getChatCompletion, getMockResponse, dataToCSV } from '@/lib/openai';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 interface ChatMessage {
   id: string;
@@ -19,176 +19,71 @@ interface ChatMessage {
   timestamp: Date;
 }
 
-const ChatInterface = ({ data }: ChatInterfaceProps) => {
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+interface ChatInterfaceProps {
+  data: DataRow[];
+  messages: ChatMessage[];
+  conversationHistory: Array<{ role: 'system' | 'user' | 'assistant'; content: string }>;
+  onMessagesChange: (messages: ChatMessage[]) => void;
+  onHistoryChange: (history: Array<{ role: 'system' | 'user' | 'assistant'; content: string }>) => void;
+}
+
+const ChatInterface = ({ data, messages, conversationHistory, onMessagesChange, onHistoryChange }: ChatInterfaceProps) => {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [isInitializing, setIsInitializing] = useState(true);
+  const [isInitializing, setIsInitializing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Simulate chat initialization
-  useEffect(() => {
-    setIsInitializing(true);
-    const timer = setTimeout(() => {
-      setIsInitializing(false);
-    }, 500);
-    return () => clearTimeout(timer);
+  // Get API key from environment
+  const apiKey = import.meta.env.VITE_OPENAI_API_KEY || '';
+
+  // Prepare data context (memoized to prevent unnecessary re-renders)
+  const dataContext = useMemo(() => {
+    const summary = getDataSummary(data);
+    const insights = generateDataInsights(data);
+    const numericColumns = getNumericColumns(data);
+
+    // Determine sample size based on total rows (max 100, less for very large datasets)
+    const sampleSize = Math.min(100, data.length);
+    const sampleData = dataToCSV(data, sampleSize);
+
+    return {
+      summary,
+      insights,
+      numericColumns,
+      sampleData,
+    };
   }, [data]);
+
+  // Initialize conversation with system prompt only if not already initialized
+  useEffect(() => {
+    if (conversationHistory.length === 0) {
+      setIsInitializing(true);
+      const systemPrompt = generateSystemPrompt(dataContext);
+      onHistoryChange([{ role: 'system', content: systemPrompt }]);
+
+      const timer = setTimeout(() => {
+        setIsInitializing(false);
+      }, 500);
+      return () => clearTimeout(timer);
+    } else {
+      // If conversation history exists, don't show skeleton
+      setIsInitializing(false);
+    }
+  }, [conversationHistory.length, dataContext, onHistoryChange]);
+
+  // Auto-scroll to bottom
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
 
   // Show skeleton during initialization
   if (isInitializing) {
     return <ChatSkeleton />;
   }
 
-  // Smart AI response generation based on data context
-  const generateAIResponse = (userMessage: string, dataContext: DataRow[]): string => {
-    const lowerMessage = userMessage.toLowerCase();
-    const summary = getDataSummary(dataContext);
-    const insights = generateDataInsights(dataContext);
-    const numericColumns = getNumericColumns(dataContext);
-
-    // Pattern matching for different types of questions
-    if (lowerMessage.includes('summary') || lowerMessage.includes('overview')) {
-      return `Based on your dataset, here's what I can tell you:
-
-📊 **Dataset Overview:**
-- ${summary.totalRows.toLocaleString()} total rows
-- ${summary.totalColumns} columns (${summary.numericColumns} numeric, ${summary.textColumns} text)
-- Key numeric columns: ${numericColumns.slice(0, 3).join(', ')}
-
-🔍 **Top Insights:**
-${insights.slice(0, 3).map(insight => `• ${insight.title}: ${insight.description}`).join('\n')}
-
-Would you like me to dive deeper into any specific aspect of your data?`;
-    }
-
-    if (lowerMessage.includes('chart') || lowerMessage.includes('visualiz')) {
-      const suggestions = [];
-      if (numericColumns.length >= 2) {
-        suggestions.push(`📈 **Scatter Plot**: Compare ${numericColumns[0]} vs ${numericColumns[1]} to find correlations`);
-      }
-      if (numericColumns.length >= 1) {
-        suggestions.push(`📊 **Bar Chart**: Show distribution of ${numericColumns[0]} values`);
-        suggestions.push(`📈 **Line Chart**: Track trends in ${numericColumns[0]} over time`);
-      }
-
-      return `Great question! Based on your data structure, here are some visualization recommendations:
-
-${suggestions.join('\n')}
-
-The Charts tab already shows some of these visualizations. Would you like me to explain how to interpret any specific chart type?`;
-    }
-
-    if (lowerMessage.includes('trend') || lowerMessage.includes('pattern')) {
-      const trendInsights = insights.filter(i => i.type === 'trend' || i.type === 'correlation');
-      if (trendInsights.length > 0) {
-        return `I've identified these patterns in your data:
-
-${trendInsights.map(insight => `🔍 **${insight.title}**: ${insight.description}`).join('\n\n')}
-
-These patterns can help you understand the underlying relationships in your dataset. Would you like me to elaborate on any of these findings?`;
-      } else {
-        return `To identify trends, I'd need to analyze your data over time or look for correlations between variables. 
-
-Your dataset has ${numericColumns.length} numeric columns that I can analyze for patterns. Some questions that might reveal trends:
-- How do values change over time?
-- Are there seasonal patterns?
-- Do certain variables move together?
-
-Can you tell me more about what kind of trends you're looking for?`;
-      }
-    }
-
-    if (lowerMessage.includes('outlier') || lowerMessage.includes('unusual')) {
-      const outlierInsights = insights.filter(i => i.type === 'outlier');
-      if (outlierInsights.length > 0) {
-        return `I've detected some outliers in your data:
-
-${outlierInsights.map(insight => `⚠️ **${insight.title}**: ${insight.description}`).join('\n\n')}
-
-Outliers can represent:
-- Data entry errors that need correction
-- Exceptional cases worth investigating
-- Natural variation in your dataset
-
-Would you like me to help you decide how to handle these outliers?`;
-      } else {
-        return `Good news! I haven't detected any obvious outliers in your numeric columns. This suggests your data is relatively consistent.
-
-However, outliers can be context-dependent. If you suspect there might be unusual values, you could:
-- Check the Data tab for values that seem out of place
-- Look at the charts for data points that stand apart
-- Tell me about specific ranges you'd expect for certain columns
-
-Is there a particular column where you suspect outliers might exist?`;
-      }
-    }
-
-    if (lowerMessage.includes('missing') || lowerMessage.includes('incomplete')) {
-      const missingData = Object.entries(summary.missingValues).filter(([_, count]) => count > 0);
-      if (missingData.length > 0) {
-        return `I found missing data in your dataset:
-
-${missingData.map(([column, count]) => {
-          const percentage = (count / summary.totalRows * 100).toFixed(1);
-          return `📋 **${column}**: ${count} missing values (${percentage}%)`;
-        }).join('\n')}
-
-**Recommendations:**
-- For small amounts of missing data (<5%), you might remove those rows
-- For larger gaps, consider filling with averages or median values
-- Sometimes missing data is meaningful and should be treated as a separate category
-
-Would you like specific advice for handling missing data in any of these columns?`;
-      } else {
-        return `Excellent! Your dataset appears to be complete with no missing values detected across all ${summary.totalColumns} columns.
-
-This is great for analysis because:
-✅ No need for data cleaning or imputation
-✅ All statistical calculations will be accurate
-✅ Charts and visualizations will show complete picture
-
-Your data quality looks solid for conducting thorough analysis!`;
-      }
-    }
-
-    // General data questions
-    if (lowerMessage.includes('column') || lowerMessage.includes('field')) {
-      const columns = Object.keys(dataContext[0] || {});
-      return `Your dataset contains ${columns.length} columns:
-
-**Numeric columns** (${summary.numericColumns}): ${numericColumns.join(', ')}
-**Text columns** (${summary.textColumns}): ${columns.filter(col => summary.columnTypes[col] === 'text').join(', ')}
-
-Each column type offers different analysis opportunities:
-- Numeric columns: Statistical analysis, correlations, trends
-- Text columns: Categorization, frequency analysis, grouping
-
-Which columns are you most interested in analyzing?`;
-    }
-
-    // Default response with helpful suggestions
-    return `I'm here to help you understand your data! Based on your dataset with ${summary.totalRows.toLocaleString()} rows and ${summary.totalColumns} columns, I can help you with:
-
-🔍 **Data Analysis Questions:**
-- "Give me a summary of this data"
-- "What patterns do you see?"
-- "Are there any outliers?"
-- "What charts should I create?"
-
-📊 **Specific Insights:**
-- Statistical summaries of numeric columns
-- Missing data analysis
-- Correlation suggestions
-- Data quality assessment
-
-💡 **Quick Insights:**
-${insights.slice(0, 2).map(insight => `• ${insight.title}`).join('\n')}
-
-What would you like to explore first?`;
-  };
-
   const handleSendMessage = async () => {
-    if (!input.trim()) return;
+    if (!input.trim() || isLoading) return;
 
     const userMessage: ChatMessage = {
       id: Date.now().toString(),
@@ -197,14 +92,36 @@ What would you like to explore first?`;
       timestamp: new Date()
     };
 
-    setMessages(prev => [...prev, userMessage]);
+    onMessagesChange([...messages, userMessage]);
     const currentInput = input;
     setInput('');
     setIsLoading(true);
+    setError(null);
 
-    // Simulate realistic AI response time
-    setTimeout(() => {
-      const aiResponse = generateAIResponse(currentInput, data);
+    try {
+      // Add user message to conversation history
+      const updatedHistory = [
+        ...conversationHistory,
+        { role: 'user' as const, content: currentInput }
+      ];
+
+      let aiResponse: string;
+
+      if (apiKey) {
+        // Use real OpenAI API
+        try {
+          aiResponse = await getChatCompletion(updatedHistory, apiKey);
+        } catch (apiError) {
+          console.error('OpenAI API failed, using fallback:', apiError);
+          // Fallback to mock response if API fails
+          aiResponse = getMockResponse(currentInput, dataContext);
+          setError('Using offline mode. Connect API key for AI-powered responses.');
+        }
+      } else {
+        // No API key, use mock response
+        aiResponse = getMockResponse(currentInput, dataContext);
+        setError('No API key found. Using offline mode.');
+      }
 
       const aiMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
@@ -213,38 +130,54 @@ What would you like to explore first?`;
         timestamp: new Date()
       };
 
-      setMessages(prev => [...prev, aiMessage]);
+      onMessagesChange([...messages, userMessage, aiMessage]);
+
+      // Update conversation history
+      onHistoryChange([
+        ...updatedHistory,
+        { role: 'assistant', content: aiResponse }
+      ]);
+
+    } catch (error) {
+      console.error('Chat error:', error);
+      setError('Failed to get response. Please try again.');
+    } finally {
       setIsLoading(false);
-    }, 1000 + Math.random() * 1000); // 1-2 second delay for realism
+    }
   };
 
   return (
-    <Card className="h-[600px] flex flex-col">
+    <Card className="h-[600px] flex flex-col border-gray-200 dark:border-gray-800">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <MessageCircle className="h-5 w-5" />
-          Data Analysis Assistant
+        <CardTitle className="text-base font-light">
+          Chat
         </CardTitle>
-        <p className="text-sm text-muted-foreground">
-          Ask questions about your data, request insights, or get help understanding patterns
+        <p className="text-xs text-gray-500 dark:text-gray-500 font-light">
+          Ask questions about your data
         </p>
       </CardHeader>
-      <CardContent className="flex-1 flex flex-col">
-        <div className="flex-1 overflow-y-auto space-y-4 mb-4 min-h-0">
+      <CardContent className="flex-1 flex flex-col min-h-0">
+        {error && (
+          <Alert variant="destructive" className="mb-4 flex-shrink-0">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+
+        <div className="flex-1 overflow-y-auto overflow-x-hidden space-y-4 mb-4 min-h-0 pr-2" style={{ maxHeight: '100%' }}>
           {messages.length === 0 ? (
-            <div className="text-center text-muted-foreground py-8">
-              <Bot className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p className="font-medium">Ready to analyze your data!</p>
-              <p className="text-sm mt-2">Try asking:</p>
+            <div className="text-center text-gray-400 dark:text-gray-600 py-8">
+              <Bot className="h-10 w-10 mx-auto mb-3 opacity-30" />
+              <p className="text-sm font-light">Ask a question about your data</p>
               <div className="mt-4 space-y-2 text-left max-w-md mx-auto">
-                <div className="bg-muted/50 p-2 rounded text-xs">
-                  "Give me a summary of this dataset"
+                <div className="border border-gray-200 dark:border-gray-800 p-2 rounded text-xs font-light">
+                  "Give me a summary"
                 </div>
-                <div className="bg-muted/50 p-2 rounded text-xs">
-                  "What patterns do you see in the data?"
+                <div className="border border-gray-200 dark:border-gray-800 p-2 rounded text-xs font-light">
+                  "What patterns do you see?"
                 </div>
-                <div className="bg-muted/50 p-2 rounded text-xs">
-                  "Are there any outliers I should know about?"
+                <div className="border border-gray-200 dark:border-gray-800 p-2 rounded text-xs font-light">
+                  "Are there any outliers?"
                 </div>
               </div>
             </div>
@@ -254,17 +187,25 @@ What would you like to explore first?`;
                 key={message.id}
                 className={`flex gap-3 ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
               >
-                <div className={`flex gap-3 max-w-[85%] ${message.type === 'user' ? 'flex-row-reverse' : ''}`}>
-                  <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${message.type === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted'
+                <div className={`flex gap-3 max-w-[85%] min-w-0 ${message.type === 'user' ? 'flex-row-reverse' : ''}`}>
+                  <div className={`flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center ${message.type === 'user' ? 'bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900' : 'bg-gray-100 dark:bg-gray-900'
                     }`}>
-                    {message.type === 'user' ? <User className="h-4 w-4" /> : <Bot className="h-4 w-4" />}
+                    {message.type === 'user' ? <User className="h-3 w-3" /> : <Bot className="h-3 w-3" />}
                   </div>
-                  <div className={`rounded-lg p-3 ${message.type === 'user'
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-muted text-muted-foreground'
+                  <div className={`rounded-lg p-3 min-w-0 break-words ${message.type === 'user'
+                    ? 'bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900'
+                    : 'bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100'
                     }`}>
-                    <div className="text-sm whitespace-pre-wrap">{message.content}</div>
-                    <div className="text-xs opacity-70 mt-2">
+                    {message.type === 'ai' ? (
+                      <div className="text-sm font-light prose prose-sm dark:prose-invert max-w-none prose-p:my-2 prose-ul:my-2 prose-ol:my-2 prose-li:my-0.5 prose-headings:font-light prose-headings:my-2 prose-code:text-xs prose-code:bg-gray-200 dark:prose-code:bg-gray-800 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-pre:bg-gray-200 dark:prose-pre:bg-gray-800 prose-pre:text-gray-900 dark:prose-pre:text-gray-100">
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                          {message.content}
+                        </ReactMarkdown>
+                      </div>
+                    ) : (
+                      <div className="text-sm font-light whitespace-pre-wrap break-words overflow-wrap-anywhere">{message.content}</div>
+                    )}
+                    <div className="text-xs opacity-50 mt-2 font-light">
                       {message.timestamp.toLocaleTimeString()}
                     </div>
                   </div>
@@ -274,6 +215,7 @@ What would you like to explore first?`;
           )}
 
           {isLoading && <ChatMessageSkeleton />}
+          <div ref={messagesEndRef} />
         </div>
 
         <div className="flex gap-2">

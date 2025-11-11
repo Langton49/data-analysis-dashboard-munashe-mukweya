@@ -1,10 +1,13 @@
-import { TrendingUp, AlertTriangle, BarChart3, Info } from "lucide-react";
+import { TrendingUp, AlertTriangle, BarChart3, Info, Sparkles } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { DataInsight, DataRow } from "@/types/data";
 import { Button } from "./ui/button";
 import { useState, useEffect } from "react";
 import { InsightsSkeleton } from "./skeletons";
+import { generateAIInsights, getMockInsights } from "@/lib/openai";
+import { getDataSummary } from "@/utils/dataAnalysis";
+import { useToast } from "@/hooks/use-toast";
 
 // 📊 Week 4-5: Smart Data Insights - Bringing Your Data to Life
 // Students - Transform raw data into meaningful stories! This component showcases professional data presentation patterns.
@@ -21,18 +24,20 @@ interface InsightsPanelProps {
 	data: DataRow[];
 	insights: DataInsight[];
 	showAll?: boolean;
+	aiInsights?: { summary: string; anomalies: string[] };
+	onAiInsightsChange?: (insights: { summary: string; anomalies: string[] } | undefined) => void;
 }
 
 const InsightsPanel = ({
 	data,
 	insights,
 	showAll = false,
+	aiInsights,
+	onAiInsightsChange,
 }: InsightsPanelProps) => {
 	const [isLoading, setIsLoading] = useState(true);
-	const [aiInsight, setAiInsight] = useState<{
-		summary: string;
-		anomalies: string[];
-	}>();
+	const [isGenerating, setIsGenerating] = useState(false);
+	const { toast } = useToast();
 
 	// Simulate insights generation
 	useEffect(() => {
@@ -103,26 +108,74 @@ const InsightsPanel = ({
 		// TODO: Week 4 - Make colors configurable or theme-aware
 	};
 
-	const handleGenerateInsight = () => {
-		setIsLoading(true);
-		fetch("http://localhost:4000/insight", {
-			method: "POST",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify({
-				prompt: `Talk like a scottish pirate and be concise and generate insights for the following dataset: ${JSON.stringify(data)}`,
-			}),
-		})
-			.then((res) => res.json())
-			.then((data) => {
-				console.log(data);
-				setAiInsight(data);
-			})
-			.catch((err) => {
-				console.error(err);
-			})
-			.finally(() => {
-				setIsLoading(false);
+	const handleGenerateInsight = async () => {
+		setIsGenerating(true);
+		
+		try {
+			// Get API key from environment
+			const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
+			
+			// Prepare data context
+			const summary = getDataSummary(data);
+			const numericColumns = Object.entries(summary.columnTypes)
+				.filter(([_, type]) => type === 'numeric')
+				.map(([col]) => col);
+			
+			const dataContext = {
+				summary,
+				insights: insights.slice(0, 5),
+				numericColumns
+			};
+			
+			let result;
+			
+			if (!apiKey) {
+				// Use fallback if no API key
+				toast({
+					title: "Using Offline Mode",
+					description: "Add VITE_OPENAI_API_KEY to .env for AI-powered insights",
+					variant: "default"
+				});
+				result = getMockInsights(dataContext);
+			} else {
+				// Call OpenAI API
+				result = await generateAIInsights(dataContext, apiKey);
+				toast({
+					title: "AI Insights Generated",
+					description: "Successfully analyzed your dataset",
+					variant: "default"
+				});
+			}
+			
+			if (onAiInsightsChange) {
+				onAiInsightsChange(result);
+			}
+		} catch (error) {
+			console.error('Error generating insights:', error);
+			toast({
+				title: "Error",
+				description: "Failed to generate insights. Using fallback analysis.",
+				variant: "destructive"
 			});
+			
+			// Fallback to mock insights
+			const summary = getDataSummary(data);
+			const numericColumns = Object.entries(summary.columnTypes)
+				.filter(([_, type]) => type === 'numeric')
+				.map(([col]) => col);
+			
+			const fallbackInsights = getMockInsights({
+				summary,
+				insights: insights.slice(0, 5),
+				numericColumns
+			});
+			
+			if (onAiInsightsChange) {
+				onAiInsightsChange(fallbackInsights);
+			}
+		} finally {
+			setIsGenerating(false);
+		}
 	};
 
 	// 🟢 EASY - Week 3: Empty State Handling
@@ -158,30 +211,40 @@ const InsightsPanel = ({
 	}
 
 	return (
-		<Card>
+		<Card className="border-gray-200 dark:border-gray-800">
 			<CardHeader>
-				<CardTitle className="flex items-center gap-2">
-					<TrendingUp className="h-5 w-5" />
-					Data Insights
-					{/* TODO: Week 4 - Add insight count badge */}
-					{/* TODO: Week 5 - Add refresh/regenerate insights button */}
+				<CardTitle className="flex items-center justify-between">
+					<span className="text-base font-light">Insights</span>
+					<Button 
+						onClick={handleGenerateInsight} 
+						disabled={isGenerating}
+						variant="ghost"
+						size="sm"
+						className="font-light text-xs"
+					>
+						<Sparkles className="h-3 w-3 mr-1.5" />
+						{isGenerating ? "Generating..." : "AI"}
+					</Button>
 				</CardTitle>
 			</CardHeader>
 			<CardContent>
-				<Button onClick={handleGenerateInsight} disabled={isLoading}>
-					{isLoading ? "Generating..." : "Generate AI Insight"}
-				</Button>
-				{aiInsight && (
-					<div className="my-4 border rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-						<h4 className="font-medium text-gray-900 dark:text-gray-100 mb-1">AI Insight</h4>
-						<p className="text-sm text-gray-600 dark:text-gray-400 mb-2 text-balance">
-							{aiInsight.summary}
+				{aiInsights && (
+					<div className="mb-6 border border-gray-200 dark:border-gray-800 rounded-lg p-4 bg-gray-50 dark:bg-gray-900">
+						<div className="flex items-center gap-2 mb-2">
+							<Sparkles className="h-4 w-4 text-gray-900 dark:text-gray-100" />
+							<h4 className="text-sm font-light">AI Analysis</h4>
+						</div>
+						<p className="text-sm text-gray-600 dark:text-gray-400 mb-3 leading-relaxed font-light">
+							{aiInsights.summary}
 						</p>
-						<ul className="list-disc list-inside text-sm text-gray-600 mb-2 text-balance">
-							{aiInsight.anomalies.map((anomaly) => (
-								<li key={anomaly}>{anomaly}</li>
+						<div className="space-y-1.5">
+							{aiInsights.anomalies.map((anomaly, idx) => (
+								<div key={idx} className="flex items-start gap-2 text-xs text-gray-500 dark:text-gray-500">
+									<span className="mt-1">•</span>
+									<span className="flex-1 font-light">{anomaly}</span>
+								</div>
 							))}
-						</ul>
+						</div>
 					</div>
 				)}
 				<div className="space-y-4">
@@ -204,75 +267,28 @@ const InsightsPanel = ({
 					{insights.map((insight, index) => (
 						<div
 							key={index}
-							className="border rounded-lg p-4 hover:bg-gray-50 transition-colors"
+							className="border-b border-gray-100 dark:border-gray-900 pb-4 last:border-0"
 						>
-							{/* TODO: Week 4 - Add click handler to expand insight details */}
 							<div className="flex items-start justify-between gap-3">
-								<div className="flex items-start gap-3 flex-1">
-									{/* 🟢 EASY - Week 3: Dynamic Icon and Styling */}
-									{/* Using our helper functions to get the right icon and colors */}
-									<div
-										className={`p-2 rounded-full ${getInsightColor(insight.type)}`}
-									>
-										{getInsightIcon(insight.type)}
-									</div>
-									<div className="flex-1">
-										<h4 className="font-medium text-gray-900 dark:text-gray-100 mb-1">
-											{insight.title}
-										</h4>
-										<p className="text-sm text-gray-600 mb-2">
-											{insight.description}
-										</p>
-
-										{/* 🟡 MEDIUM - Week 4: Conditional Rendering */}
-										{/* TODO: Students - When and why do we use conditional rendering? */}
-										{/* 
-                    What's happening here:
-                    - Not all insights have a 'value' field
-                    - We only want to show the badge if there IS a value
-                    - The && operator means "if insight.value exists, then show the badge"
-                    
-                    Why conditional rendering?
-                    - Prevents showing empty or undefined values
-                    - Makes the UI cleaner and more professional
-                    - Avoids layout issues with missing data
-                    
-                    Try this: What happens if you remove the conditional check?
-                    */}
-										{insight.value && (
-											<Badge variant="secondary" className="text-xs">
-												{insight.value}
-											</Badge>
-										)}
-
-										{/* TODO: Week 5 - Add action buttons (explore, dismiss, share) */}
-									</div>
+								<div className="flex-1">
+									<h4 className="text-sm font-light text-gray-900 dark:text-gray-100 mb-1">
+										{insight.title}
+									</h4>
+									<p className="text-xs text-gray-500 dark:text-gray-500 font-light leading-relaxed">
+										{insight.description}
+									</p>
+									{insight.value && (
+										<span className="inline-block mt-2 text-xs text-gray-400 dark:text-gray-600 font-light">
+											{insight.value}
+										</span>
+									)}
 								</div>
-
-								{/* 🟡 MEDIUM - Week 4: Confidence Score Display */}
-								{/* TODO: Students - How do confidence scores help users trust insights? */}
-								{/* 
-                What's happening here:
-                - AI-generated insights have confidence scores (0-1)
-                - We convert to percentage (0.85 becomes 85%)
-                - We round to avoid showing decimals like 84.7%
-                
-                Why show confidence scores?
-                - Helps users understand how reliable the insight is
-                - Builds trust in AI-generated content
-                - Lets users prioritize which insights to act on
-                
-                Real-world example: Weather apps show confidence in forecasts
-                */}
 								{insight.confidence && (
-									<Badge variant="outline" className="text-xs">
-										{insight.confidence} confidence
-									</Badge>
+									<span className="text-xs text-gray-400 dark:text-gray-600 font-light">
+										{insight.confidence}
+									</span>
 								)}
 							</div>
-
-							{/* TODO: Week 5 - Add expandable details section */}
-							{/* TODO: Week 6 - Add related charts or visualizations */}
 						</div>
 					))}
 
@@ -292,12 +308,10 @@ const InsightsPanel = ({
           Real-world example: Google shows 10 results per page, not 1000
           */}
 					{!showAll && insights.length > 4 && (
-						<div className="text-center pt-4">
-							<p className="text-sm text-gray-500">
-								{insights.length - 4} more insights available in the Insights
-								tab
+						<div className="text-center pt-2">
+							<p className="text-xs text-gray-400 dark:text-gray-600 font-light">
+								+{insights.length - 4} more insights
 							</p>
-							{/* TODO: Week 5 - Add "Show More" button */}
 						</div>
 					)}
 				</div>

@@ -6,18 +6,17 @@
 // Students will enhance this component throughout weeks 4-10
 
 import { useState, useMemo, useEffect } from 'react';
-import { RefreshCw, Download, BarChart3, PieChart, LineChart, Table, MessageCircle, FileText, Image } from 'lucide-react';
+import { Download, BarChart3, Table as TableIcon, FileText } from 'lucide-react';
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DataRow } from '@/types/data';
 import DataTable from './DataTable';
 import ChartSection from './ChartSection';
 import InsightsPanel from './InsightsPanel';
 import ChatInterface from './ChatInterface';
+import Sidebar from './Sidebar';
 import { generateDataInsights, getDataSummary } from '@/utils/dataAnalysis';
 import { DashboardSkeleton } from './skeletons';
-import { ThemeToggle } from './ThemeToggle';
 
 // 🔧 WEEK 6: Import custom chart components here
 // Example: import CustomChartBuilder from './CustomChartBuilder';
@@ -34,10 +33,24 @@ interface DashboardProps {
   onReset: () => void;
 }
 
+interface ChatMessage {
+  id: string;
+  type: 'user' | 'ai';
+  content: string;
+  timestamp: Date;
+}
+
 const Dashboard = ({ data, fileName, onReset }: DashboardProps) => {
   // 🧠 Dashboard state management
   const [activeTab, setActiveTab] = useState('overview');
   const [isInitializing, setIsInitializing] = useState(true);
+  
+  // 💬 Persistent chat state - maintained across tab switches
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [chatHistory, setChatHistory] = useState<Array<{ role: 'system' | 'user' | 'assistant'; content: string }>>([]);
+  
+  // 🔍 Persistent AI insights state - maintained across tab switches
+  const [aiInsights, setAiInsights] = useState<{ summary: string; anomalies: string[] } | undefined>(undefined);
   
   // 🔧 WEEK 4: Add data processing state here
   // Example: const [filteredData, setFilteredData] = useState(data);
@@ -146,142 +159,145 @@ ${Object.entries(summary.columnTypes)
   };
 
   return (
-    <div className="space-y-6">
-      {/* Enhanced Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div className="flex-1">
-          <div className="flex items-center gap-4">
-            <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Data Analysis Dashboard</h2>
-            <ThemeToggle />
+    <div className="flex min-h-screen">
+      {/* Sidebar Navigation */}
+      <Sidebar 
+        activeTab={activeTab} 
+        onTabChange={setActiveTab}
+        fileName={fileName}
+        onReset={onReset}
+      />
+
+      {/* Main Content */}
+      <main className="flex-1 ml-64 p-8 bg-gray-50 dark:bg-gray-950 overflow-x-hidden">
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-2xl font-light tracking-tight text-gray-900 dark:text-gray-100">
+              {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
+            </h2>
+            <div className="flex gap-2">
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={handleExportCSV} 
+                className="font-light"
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Export Data
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={handleExportInsights}
+                className="font-light"
+              >
+                <FileText className="h-4 w-4 mr-2" />
+                Export Report
+              </Button>
+            </div>
           </div>
-          <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400 mt-1">
-            <span className="flex items-center gap-1">
-              <FileText className="h-4 w-4" />
-              <span className="font-semibold">{fileName}</span>
-            </span>
+          
+          {/* Stats Bar */}
+          <div className="flex items-center gap-6 text-sm text-gray-500 dark:text-gray-400 font-light">
             <span>{data.length.toLocaleString()} rows</span>
+            <span>•</span>
             <span>{Object.keys(data[0] || {}).length} columns</span>
+            <span>•</span>
             <span>{summary.numericColumns} numeric</span>
-          </div>
-        </div>
-        <div className="flex gap-2 flex-wrap">
-          <Button variant="outline" onClick={handleExportCSV} className="flex items-center gap-2">
-            <Download className="h-4 w-4" />
-            Export Data
-          </Button>
-          <Button variant="outline" onClick={handleExportInsights} className="flex items-center gap-2">
-            <FileText className="h-4 w-4" />
-            Export Report
-          </Button>
-          <Button variant="outline" onClick={onReset} className="flex items-center gap-2">
-            <RefreshCw className="h-4 w-4" />
-            New Dataset
-          </Button>
-        </div>
-      </div>
-
-      {/* Enhanced Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 border-blue-200 dark:border-blue-800">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-blue-600 dark:text-blue-400">Total Records</CardTitle>
-            <BarChart3 className="h-4 w-4 text-blue-800 dark:text-blue-300" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-blue-900 dark:text-blue-100">{summary.totalRows.toLocaleString()}</div>
-            <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">rows of data</p>
-          </CardContent>
-        </Card>
-        
-        <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900 border-green-200 dark:border-green-800">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-green-800 dark:text-green-400">Data Columns</CardTitle>
-            <Table className="h-4 w-4 text-green-600 dark:text-green-300" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-900 dark:text-green-100">{summary.totalColumns}</div>
-            <p className="text-xs text-green-600 dark:text-green-400 mt-1">total fields</p>
-          </CardContent>
-        </Card>
-        
-        <Card className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950 dark:to-purple-900 border-purple-200 dark:border-purple-800">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-purple-800 dark:text-purple-400">Numeric Fields</CardTitle>
-            <LineChart className="h-4 w-4 text-purple-600 dark:text-purple-300" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-purple-900 dark:text-purple-100">{summary.numericColumns}</div>
-            <p className="text-xs text-purple-600 dark:text-purple-400 mt-1">for analysis</p>
-          </CardContent>
-        </Card>
-        
-        <Card className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950 dark:to-orange-900 border-orange-200 dark:border-orange-800">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-orange-800 dark:text-orange-400">Data Quality</CardTitle>
-            <PieChart className="h-4 w-4 text-orange-600 dark:text-orange-300" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-orange-900 dark:text-orange-100">
+            <span>•</span>
+            <span>
               {Object.values(summary.missingValues).every(count => count === 0) ? '100%' : 
-               `${(100 - (Object.values(summary.missingValues).reduce((a, b) => a + b, 0) / (summary.totalRows * summary.totalColumns) * 100)).toFixed(1)}%`}
-            </div>
-            <p className="text-xs text-orange-600 dark:text-orange-400 mt-1">complete data</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Main Content Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="overview" className="flex items-center gap-2">
-            <BarChart3 className="h-4 w-4" />
-            <span className="hidden sm:inline">Overview</span>
-          </TabsTrigger>
-          <TabsTrigger value="charts" className="flex items-center gap-2">
-            <PieChart className="h-4 w-4" />
-            <span className="hidden sm:inline">Charts</span>
-          </TabsTrigger>
-          <TabsTrigger value="insights" className="flex items-center gap-2">
-            <LineChart className="h-4 w-4" />
-            <span className="hidden sm:inline">Insights</span>
-          </TabsTrigger>
-          <TabsTrigger value="chat" className="flex items-center gap-2">
-            <MessageCircle className="h-4 w-4" />
-            <span className="hidden sm:inline">Chat</span>
-          </TabsTrigger>
-          <TabsTrigger value="data" className="flex items-center gap-2">
-            <Table className="h-4 w-4" />
-            <span className="hidden sm:inline">Data</span>
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="overview" className="space-y-4">
-          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-            <div className="xl:col-span-2">
-              <ChartSection data={data} />
-            </div>
-            <div className="xl:col-span-1">
-              <InsightsPanel data={data} insights={insights.slice(0, 6)} />
-            </div>
+               `${(100 - (Object.values(summary.missingValues).reduce((a, b) => a + b, 0) / (summary.totalRows * summary.totalColumns) * 100)).toFixed(1)}%`} complete
+            </span>
           </div>
-        </TabsContent>
+        </div>
 
-        <TabsContent value="charts">
-          <ChartSection data={data} showAll />
-        </TabsContent>
+        {/* Content Area */}
+        <div className="space-y-6">
+          {activeTab === 'overview' && (
+            <>
+              {/* Minimalist Summary Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <Card className="border-gray-200 dark:border-gray-800">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-light text-gray-500 dark:text-gray-400">Total Records</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-3xl font-light">{summary.totalRows.toLocaleString()}</div>
+                  </CardContent>
+                </Card>
+                
+                <Card className="border-gray-200 dark:border-gray-800">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-light text-gray-500 dark:text-gray-400">Columns</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-3xl font-light">{summary.totalColumns}</div>
+                  </CardContent>
+                </Card>
+                
+                <Card className="border-gray-200 dark:border-gray-800">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-light text-gray-500 dark:text-gray-400">Numeric</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-3xl font-light">{summary.numericColumns}</div>
+                  </CardContent>
+                </Card>
+                
+                <Card className="border-gray-200 dark:border-gray-800">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-light text-gray-500 dark:text-gray-400">Quality</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-3xl font-light">
+                      {Object.values(summary.missingValues).every(count => count === 0) ? '100%' : 
+                       `${(100 - (Object.values(summary.missingValues).reduce((a, b) => a + b, 0) / (summary.totalRows * summary.totalColumns) * 100)).toFixed(1)}%`}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
 
-        <TabsContent value="insights">
-          <InsightsPanel data={data} insights={insights} showAll />
-        </TabsContent>
+              {/* Charts and Insights */}
+              <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                <div className="xl:col-span-2">
+                  <ChartSection data={data} />
+                </div>
+                <div className="xl:col-span-1">
+                  <InsightsPanel 
+                    data={data} 
+                    insights={insights.slice(0, 6)}
+                    aiInsights={aiInsights}
+                    onAiInsightsChange={setAiInsights}
+                  />
+                </div>
+              </div>
+            </>
+          )}
 
-        <TabsContent value="chat">
-          <ChatInterface data={data} />
-        </TabsContent>
-
-        <TabsContent value="data">
-          <DataTable data={data} />
-        </TabsContent>
-      </Tabs>
+          {activeTab === 'charts' && <ChartSection data={data} showAll />}
+          {activeTab === 'insights' && (
+            <InsightsPanel 
+              data={data} 
+              insights={insights} 
+              showAll 
+              aiInsights={aiInsights}
+              onAiInsightsChange={setAiInsights}
+            />
+          )}
+          {activeTab === 'chat' && (
+            <ChatInterface 
+              data={data}
+              messages={chatMessages}
+              conversationHistory={chatHistory}
+              onMessagesChange={setChatMessages}
+              onHistoryChange={setChatHistory}
+            />
+          )}
+          {activeTab === 'data' && <DataTable data={data} />}
+        </div>
+      </main>
     </div>
   );
 };

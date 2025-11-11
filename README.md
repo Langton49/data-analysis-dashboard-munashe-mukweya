@@ -1,7 +1,7 @@
 
-# 🎯 Plug-N-Learn: Data Analysis Dashboard
+# 📊 Data Visualizer: Interactive Data Analysis Dashboard
 
-**A beginner-friendly React project to learn data visualization and analysis**
+**Upload your CSV data and instantly discover insights with interactive charts and AI-powered analysis**
 
 ## 🚀 Quick Start
 
