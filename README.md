@@ -13,7 +13,7 @@ npm install
 npm run dev
 
 # 3. Open in browser
-# Go to http://localhost:5173
+# Go to http://localhost:8080
 ```
 
 ## 🎯 Getting Started
