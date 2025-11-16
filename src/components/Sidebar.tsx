@@ -1,5 +1,6 @@
 import { TrendingUp, BarChart3, LineChart, Table, MessageCircle, Upload, Moon, Sun, DollarSign } from 'lucide-react';
 import { useTheme } from 'next-themes';
+import logo from '../components/ui/logo(2).png'
 
 interface SidebarProps {
   activeTab: string;
@@ -28,8 +29,8 @@ const Sidebar = ({ activeTab, onTabChange, fileName, onReset }: SidebarProps) =>
       {/* Logo/Brand */}
       <div className="p-6 border-b border-gray-200 dark:border-gray-800">
         <div className="flex items-center gap-3 mb-2">
-          <div className="bg-gradient-to-br from-green-600 to-blue-600 p-2 rounded-lg">
-            <TrendingUp className="h-5 w-5 text-white" />
+          <div className="rounded-lg">
+            <img src={logo} alt="Application logo" style={{ width: '50px', height: 'auto' }}/>
           </div>
           <div>
             <h1 className="text-lg font-light tracking-tight text-gray-900 dark:text-gray-100">

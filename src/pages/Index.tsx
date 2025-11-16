@@ -8,6 +8,8 @@
 // 📦 React imports - the core tools for building components
 import { useState } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
+import logo from '../components/ui/logo(2).png'
+
 
 // 🎨 Icon imports - beautiful icons for your UI
 import { Upload, BarChart3, PieChart, TrendingUp, Database } from 'lucide-react';
@@ -24,6 +26,7 @@ import DataUpload from '@/components/DataUpload';
 import Dashboard from '@/components/Dashboard';
 import { DataRow } from '@/types/data';
 import { InlineErrorFallback } from '@/components/ErrorFallback';
+
 // 🆕 WEEK 3: Import NameInput demo
 // import NameInput from '@/components/NameInput';
 
@@ -56,8 +59,8 @@ const Index = () => {
           <header className="text-center mb-12">
             {/* 🎯 Logo and Title */}
             <div className="flex items-center justify-center mb-6" role="img" aria-label="Stock Market Analyzer logo">
-              <div className="bg-gradient-to-br from-green-600 to-blue-600 p-4 rounded-lg shadow-lg">
-                <TrendingUp className="h-12 w-12 text-white" aria-hidden="true" />
+              <div className="rounded-lg shadow-lg">
+                <img src={logo} alt="Application logo" style={{ width: '100px', height: 'auto' }}/>
               </div>
             </div>
             
