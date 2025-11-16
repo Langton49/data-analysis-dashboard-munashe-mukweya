@@ -5,8 +5,9 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { DataRow } from '@/types/data';
 import { getDataSummary } from '@/utils/dataAnalysis';
 import { ChartSkeleton } from './skeletons';
-import { TrendingUp, BarChart3, Activity, DollarSign, Maximize2, ZoomIn, ZoomOut, ChevronLeft, ChevronRight, RotateCcw } from 'lucide-react';
+import { TrendingUp, BarChart3, Activity, DollarSign, Maximize2, ZoomIn, ZoomOut, ChevronLeft, ChevronRight, RotateCcw, BarChart2 } from 'lucide-react';
 import FullScreenChart from './FullScreenChart';
+import { CandlestickChart } from './CandlestickChart';
 
 interface ChartSectionProps {
   data: DataRow[];
@@ -442,7 +443,18 @@ const ChartSection = ({ data, showAll = false }: ChartSectionProps) => {
     </div>
   );
 
-  const OHLCChart = ({ height = 350, fullScreen = false }: { height?: number; fullScreen?: boolean }) => (
+  const OHLCChart = ({ height = 350, fullScreen = false }: { height?: number; fullScreen?: boolean }) => {
+    return (
+      <CandlestickChart 
+        data={stockChartData}
+        height={height}
+        fullScreen={fullScreen}
+        isDarkMode={isDarkMode}
+      />
+    );
+  };
+
+  const OHLCChartOld = ({ height = 350, fullScreen = false }: { height?: number; fullScreen?: boolean }) => (
     <div
       style={{
         height: fullScreen ? '100%' : `${height}px`,
@@ -616,11 +628,6 @@ const ChartSection = ({ data, showAll = false }: ChartSectionProps) => {
       <div className="flex items-center justify-between mb-4 p-3 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800">
         <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
           <span>Showing {safeWindowInfo.start + 1}-{safeWindowInfo.end} of {safeWindowInfo.total} records</span>
-          {safeWindowInfo.total > windowSize && (
-            <span className="text-xs bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-2 py-1 rounded">
-              Windowed for performance
-            </span>
-          )}
         </div>
 
         <div className="flex items-center gap-1">
@@ -881,13 +888,13 @@ const ChartSection = ({ data, showAll = false }: ChartSectionProps) => {
     <>
       {isStockData && data.length > 0 && <ChartControls />}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-        {/* OHLC Price Chart */}
+        {/* Candlestick Chart */}
         <Card className="border-gray-200 dark:border-gray-800">
           <CardHeader>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-gray-600 dark:text-gray-400" />
-                <CardTitle className="text-base font-light">OHLC Analysis</CardTitle>
+                <BarChart2 className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                <CardTitle className="text-base font-light">Candlestick Chart</CardTitle>
               </div>
               <Button
                 variant="ghost"
@@ -900,7 +907,7 @@ const ChartSection = ({ data, showAll = false }: ChartSectionProps) => {
               </Button>
             </div>
             <CardDescription className="font-light">
-              Open, High, Low, Close price movements
+              Professional OHLC candlestick analysis with bullish/bearish indicators
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -1037,12 +1044,12 @@ const ChartSection = ({ data, showAll = false }: ChartSectionProps) => {
       <FullScreenChart
         isOpen={fullScreenChart === 'ohlc'}
         onClose={() => setFullScreenChart(null)}
-        title="OHLC Analysis"
-        description="Comprehensive Open, High, Low, Close price analysis"
-        icon={<TrendingUp className="h-5 w-5 text-gray-600 dark:text-gray-400" />}
+        title="Candlestick Chart Analysis"
+        description="Professional OHLC candlestick chart with bullish/bearish indicators"
+        icon={<BarChart2 className="h-5 w-5 text-gray-600 dark:text-gray-400" />}
         controls={<CompactChartControls />}
       >
-        <OHLCChart height={600} />
+        <OHLCChart fullScreen={true} />
       </FullScreenChart>
 
       <FullScreenChart

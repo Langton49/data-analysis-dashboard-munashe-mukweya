@@ -282,11 +282,7 @@ const InsightsPanel = ({
 										</span>
 									)}
 								</div>
-								{insight.confidence && (
-									<span className="text-xs text-gray-400 dark:text-gray-600 font-light">
-										{insight.confidence}
-									</span>
-								)}
+								
 							</div>
 						</div>
 					))}
