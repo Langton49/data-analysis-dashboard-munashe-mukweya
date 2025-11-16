@@ -8,7 +8,9 @@ interface VirtualizedTableProps {
     columns: string[];
     rowHeight?: number;
     containerHeight?: number;
-    formatValue?: (value: any) => string;
+    formatValue?: (value: any, column?: string) => string;
+    getCellColorClass?: (value: any, column: string) => string;
+    getCellBackgroundClass?: (value: any, column: string) => string;
     onRowClick?: (row: DataRow) => void;
 }
 
@@ -17,16 +19,21 @@ const VirtualTableRow = memo(({
     row,
     columns,
     formatValue,
+    getCellColorClass,
+    getCellBackgroundClass,
     onClick
 }: {
     row: DataRow;
     columns: string[];
-    formatValue?: (value: any) => string;
+    formatValue?: (value: any, column?: string) => string;
+    getCellColorClass?: (value: any, column: string) => string;
+    getCellBackgroundClass?: (value: any, column: string) => string;
     onClick?: () => void;
 }) => {
     const defaultFormat = (value: any) => {
         if (value === null || value === undefined) return '-';
         if (typeof value === 'number') {
+            if (Math.abs(value) >= 1000000) return `${(value / 1000000).toFixed(1)}M`;
             if (Math.abs(value) >= 1000) return value.toLocaleString();
             if (value % 1 !== 0) return value.toFixed(2);
             return value.toString();
@@ -42,11 +49,20 @@ const VirtualTableRow = memo(({
             className="hover:bg-muted/50 cursor-pointer transition-colors"
             onClick={onClick}
         >
-            {columns.map((column) => (
-                <TableCell key={column} className="py-3">
-                    {format(row[column])}
-                </TableCell>
-            ))}
+            {columns.map((column) => {
+                const cellValue = row[column];
+                const colorClass = getCellColorClass ? getCellColorClass(cellValue, column) : '';
+                const bgClass = getCellBackgroundClass ? getCellBackgroundClass(cellValue, column) : '';
+                
+                return (
+                    <TableCell 
+                        key={column} 
+                        className={`py-3 transition-colors ${colorClass} ${bgClass}`}
+                    >
+                        {format(cellValue, column)}
+                    </TableCell>
+                );
+            })}
         </TableRow>
     );
 });
@@ -59,6 +75,8 @@ export const VirtualizedTable = memo(({
     rowHeight = 53, // Default row height in pixels
     containerHeight = 600,
     formatValue,
+    getCellColorClass,
+    getCellBackgroundClass,
     onRowClick,
 }: VirtualizedTableProps) => {
     const containerRef = useRef<HTMLDivElement>(null);
@@ -84,11 +102,24 @@ export const VirtualizedTable = memo(({
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            {columns.map((column) => (
-                                <TableHead key={column} className="font-semibold">
-                                    {column}
-                                </TableHead>
-                            ))}
+                            {columns.map((column) => {
+                                const getHeaderColorClass = (col: string) => {
+                                  const colLower = col.toLowerCase();
+                                  if (colLower.includes('price') || colLower === 'close') return 'text-blue-600 dark:text-blue-400';
+                                  if (colLower.includes('vol')) return 'text-cyan-600 dark:text-cyan-400';
+                                  if (colLower.includes('change') || colLower.includes('%')) return 'text-purple-600 dark:text-purple-400';
+                                  if (colLower.includes('high')) return 'text-green-600 dark:text-green-400';
+                                  if (colLower.includes('low')) return 'text-red-600 dark:text-red-400';
+                                  if (colLower.includes('open')) return 'text-gray-600 dark:text-gray-400';
+                                  return '';
+                                };
+
+                                return (
+                                    <TableHead key={column} className={`font-semibold ${getHeaderColorClass(column)}`}>
+                                        {column}
+                                    </TableHead>
+                                );
+                            })}
                         </TableRow>
                     </TableHeader>
                 </Table>
@@ -121,6 +152,8 @@ export const VirtualizedTable = memo(({
                                         row={row}
                                         columns={columns}
                                         formatValue={formatValue}
+                                        getCellColorClass={getCellColorClass}
+                                        getCellBackgroundClass={getCellBackgroundClass}
                                         onClick={() => handleRowClick(row)}
                                     />
                                 ))}

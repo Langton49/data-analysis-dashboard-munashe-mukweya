@@ -100,10 +100,38 @@ const DataTable = memo(({ data }: DataTableProps) => {
         if (aVal == null) return sortDirection === 'asc' ? 1 : -1;
         if (bVal == null) return sortDirection === 'asc' ? -1 : 1;
         
+        // Check if this is a date column (contains 'date' in name or looks like a date)
+        const isDateColumn = sortColumn.toLowerCase().includes('date');
+        const looksLikeDate = (val: any) => {
+          const str = String(val);
+          // Check for common date patterns: YYYY-MM-DD, MM/DD/YYYY, DD/MM/YYYY, etc.
+          return /^\d{4}-\d{2}-\d{2}$/.test(str) || 
+                 /^\d{1,2}\/\d{1,2}\/\d{4}$/.test(str) ||
+                 /^\d{1,2}-\d{1,2}-\d{4}$/.test(str) ||
+                 !isNaN(Date.parse(str));
+        };
+        
+        // Handle date sorting
+        if (isDateColumn || (looksLikeDate(aVal) && looksLikeDate(bVal))) {
+          const aDate = new Date(String(aVal));
+          const bDate = new Date(String(bVal));
+          
+          // Handle invalid dates
+          if (isNaN(aDate.getTime()) && isNaN(bDate.getTime())) return 0;
+          if (isNaN(aDate.getTime())) return sortDirection === 'asc' ? 1 : -1;
+          if (isNaN(bDate.getTime())) return sortDirection === 'asc' ? -1 : 1;
+          
+          return sortDirection === 'asc' 
+            ? aDate.getTime() - bDate.getTime()
+            : bDate.getTime() - aDate.getTime();
+        }
+        
+        // Handle numeric sorting
         if (typeof aVal === 'number' && typeof bVal === 'number') {
           return sortDirection === 'asc' ? aVal - bVal : bVal - aVal;
         }
         
+        // Handle string sorting (default)
         const aStr = String(aVal).toLowerCase();
         const bStr = String(bVal).toLowerCase();
         
@@ -160,10 +188,31 @@ const DataTable = memo(({ data }: DataTableProps) => {
     return <ArrowUpDown className="h-3 w-3 opacity-50" />;
   };
 
-  const formatValue = (value: any) => {
+  // Stock-specific color scheme matching charts
+  const STOCK_COLORS = {
+    bullish: 'text-green-600 dark:text-green-400',      // Green for positive/gains
+    bearish: 'text-red-600 dark:text-red-400',          // Red for negative/losses
+    neutral: 'text-gray-600 dark:text-gray-400',        // Gray for neutral
+    volume: 'text-cyan-600 dark:text-cyan-400',         // Cyan for volume
+    price: 'text-blue-600 dark:text-blue-400',          // Blue for price
+    percentage: 'font-mono text-sm',                     // Monospace for percentages
+    currency: 'font-mono text-sm',                      // Monospace for currency
+  };
+
+  // Check if this is stock data
+  const isStockData = useMemo(() => {
+    const stockColumns = ['Date', 'Price', 'Open', 'High', 'Low', 'Vol.', 'Change%'];
+    return stockColumns.some(col => columns.includes(col));
+  }, [columns]);
+
+  const formatValue = (value: any, column?: string) => {
     if (value === null || value === undefined) return '-';
+    
     if (typeof value === 'number') {
       // Format large numbers with proper separators
+      if (Math.abs(value) >= 1000000) {
+        return `${(value / 1000000).toFixed(1)}M`;
+      }
       if (Math.abs(value) >= 1000) {
         return value.toLocaleString();
       }
@@ -173,10 +222,88 @@ const DataTable = memo(({ data }: DataTableProps) => {
       }
       return value.toString();
     }
+    
+    if (typeof value === 'string' && value.includes('%')) {
+      return value;
+    }
+    
     if (typeof value === 'boolean') {
       return value ? '✓' : '✗';
     }
+    
     return String(value);
+  };
+
+  const getCellColorClass = (value: any, column: string) => {
+    if (!isStockData) return '';
+    
+    const columnLower = column.toLowerCase();
+    
+    // Price-related columns
+    if (columnLower.includes('price') || columnLower === 'close') {
+      return STOCK_COLORS.price;
+    }
+    
+    // Volume columns
+    if (columnLower.includes('vol')) {
+      return STOCK_COLORS.volume;
+    }
+    
+    // Change/percentage columns with conditional coloring
+    if (columnLower.includes('change') || columnLower.includes('%')) {
+      if (typeof value === 'string' && value.includes('%')) {
+        const numValue = parseFloat(value.replace('%', ''));
+        if (numValue > 0) return `${STOCK_COLORS.bullish} ${STOCK_COLORS.percentage}`;
+        if (numValue < 0) return `${STOCK_COLORS.bearish} ${STOCK_COLORS.percentage}`;
+        return `${STOCK_COLORS.neutral} ${STOCK_COLORS.percentage}`;
+      }
+      if (typeof value === 'number') {
+        if (value > 0) return `${STOCK_COLORS.bullish} ${STOCK_COLORS.percentage}`;
+        if (value < 0) return `${STOCK_COLORS.bearish} ${STOCK_COLORS.percentage}`;
+        return `${STOCK_COLORS.neutral} ${STOCK_COLORS.percentage}`;
+      }
+    }
+    
+    // High/Low columns
+    if (columnLower.includes('high')) {
+      return STOCK_COLORS.bullish;
+    }
+    if (columnLower.includes('low')) {
+      return STOCK_COLORS.bearish;
+    }
+    
+    // Open columns
+    if (columnLower.includes('open')) {
+      return STOCK_COLORS.neutral;
+    }
+    
+    // Currency formatting for price-like values
+    if (typeof value === 'number' && (columnLower.includes('price') || columnLower.includes('$'))) {
+      return STOCK_COLORS.currency;
+    }
+    
+    return '';
+  };
+
+  const getCellBackgroundClass = (value: any, column: string) => {
+    if (!isStockData) return '';
+    
+    const columnLower = column.toLowerCase();
+    
+    // Subtle background colors for change columns
+    if (columnLower.includes('change') || columnLower.includes('%')) {
+      if (typeof value === 'string' && value.includes('%')) {
+        const numValue = parseFloat(value.replace('%', ''));
+        if (numValue > 0) return 'bg-green-50 dark:bg-green-900/10';
+        if (numValue < 0) return 'bg-red-50 dark:bg-red-900/10';
+      }
+      if (typeof value === 'number') {
+        if (value > 0) return 'bg-green-50 dark:bg-green-900/10';
+        if (value < 0) return 'bg-red-50 dark:bg-red-900/10';
+      }
+    }
+    
+    return '';
   };
 
   const getColumnType = (column: string) => {
@@ -297,8 +424,10 @@ const DataTable = memo(({ data }: DataTableProps) => {
           <VirtualizedTable
             data={filteredAndSortedData}
             columns={visibleColumns}
-            formatValue={formatValue}
+            formatValue={(value, column) => formatValue(value, column)}
             containerHeight={600}
+            getCellColorClass={getCellColorClass}
+            getCellBackgroundClass={getCellBackgroundClass}
           />
         ) : (
           <>
@@ -329,32 +458,46 @@ const DataTable = memo(({ data }: DataTableProps) => {
                 >
                   <TableHeader>
                     <TableRow>
-                      {visibleColumns.map((column) => (
-                        <TableHead 
-                          key={column} 
-                          className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors select-none whitespace-nowrap"
-                          onClick={() => handleSort(column)}
-                          onKeyDown={(e) => handleKeyboardClick(e, () => handleSort(column))}
-                          tabIndex={0}
-                          role="button"
-                          aria-label={getSortAriaLabel(column, sortColumn === column ? sortDirection : null)}
-                          aria-sort={
-                            sortColumn === column 
-                              ? sortDirection === 'asc' 
-                                ? 'ascending' 
-                                : sortDirection === 'desc'
-                                ? 'descending'
+                      {visibleColumns.map((column) => {
+                        const getHeaderColorClass = (col: string) => {
+                          if (!isStockData) return '';
+                          const colLower = col.toLowerCase();
+                          if (colLower.includes('price') || colLower === 'close') return 'text-blue-600 dark:text-blue-400';
+                          if (colLower.includes('vol')) return 'text-cyan-600 dark:text-cyan-400';
+                          if (colLower.includes('change') || colLower.includes('%')) return 'text-purple-600 dark:text-purple-400';
+                          if (colLower.includes('high')) return 'text-green-600 dark:text-green-400';
+                          if (colLower.includes('low')) return 'text-red-600 dark:text-red-400';
+                          if (colLower.includes('open')) return 'text-gray-600 dark:text-gray-400';
+                          return '';
+                        };
+
+                        return (
+                          <TableHead 
+                            key={column} 
+                            className={`cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors select-none whitespace-nowrap ${getHeaderColorClass(column)}`}
+                            onClick={() => handleSort(column)}
+                            onKeyDown={(e) => handleKeyboardClick(e, () => handleSort(column))}
+                            tabIndex={0}
+                            role="button"
+                            aria-label={getSortAriaLabel(column, sortColumn === column ? sortDirection : null)}
+                            aria-sort={
+                              sortColumn === column 
+                                ? sortDirection === 'asc' 
+                                  ? 'ascending' 
+                                  : sortDirection === 'desc'
+                                  ? 'descending'
+                                  : 'none'
                                 : 'none'
-                              : 'none'
-                          }
-                          style={{ width: '150px', maxWidth: '200px' }}
-                        >
-                          <div className="flex items-center justify-between gap-2 pr-2">
-                            <span className="font-light text-sm truncate">{column}</span>
-                            <span aria-hidden="true" className="flex-shrink-0">{getSortIcon(column)}</span>
-                          </div>
-                        </TableHead>
-                      ))}
+                            }
+                            style={{ width: '150px', maxWidth: '200px' }}
+                          >
+                            <div className="flex items-center justify-between gap-2 pr-2">
+                              <span className="font-medium text-sm truncate">{column}</span>
+                              <span aria-hidden="true" className="flex-shrink-0">{getSortIcon(column)}</span>
+                            </div>
+                          </TableHead>
+                        );
+                      })}
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -373,19 +516,25 @@ const DataTable = memo(({ data }: DataTableProps) => {
                           key={index}
                           className="hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors"
                         >
-                          {visibleColumns.map((column) => (
-                            <TableCell 
-                              key={column}
-                              className={`whitespace-nowrap font-light text-sm ${
-                                getColumnType(column) === 'numeric' ? 'text-right font-mono' : ''
-                              }`}
-                              style={{ width: '150px', maxWidth: '200px' }}
-                            >
-                              <div className="truncate" title={String(formatValue(row[column]))}>
-                                {formatValue(row[column])}
-                              </div>
-                            </TableCell>
-                          ))}
+                          {visibleColumns.map((column) => {
+                            const cellValue = row[column];
+                            const colorClass = getCellColorClass(cellValue, column);
+                            const bgClass = getCellBackgroundClass(cellValue, column);
+                            
+                            return (
+                              <TableCell 
+                                key={column}
+                                className={`whitespace-nowrap font-light text-sm transition-colors ${
+                                  getColumnType(column) === 'numeric' ? 'text-right font-mono' : ''
+                                } ${colorClass} ${bgClass}`}
+                                style={{ width: '150px', maxWidth: '200px' }}
+                              >
+                                <div className="truncate" title={String(formatValue(cellValue, column))}>
+                                  {formatValue(cellValue, column)}
+                                </div>
+                              </TableCell>
+                            );
+                          })}
                         </TableRow>
                       ))
                     )}

@@ -1,11 +1,33 @@
-# Sample Data Files for Data Discovery Tool
+# Sample Data Files for Stock Market Analysis Tool
 
-This folder contains sample CSV files that students can use to test their Data Discovery Tool application throughout the course.
+This folder contains sample CSV files that students can use to test their Stock Market Analysis Tool application throughout the course.
 
 ## Available Sample Files
 
-### 1. sales-data.csv
-**Purpose**: Sales and revenue analysis
+### 1. stock-data.csv ⭐ **PRIMARY DATASET**
+**Purpose**: Historical stock market analysis (basic)
+- **Columns**: Date, Price, Open, High, Low, Vol., Change%
+- **Records**: 15 trading days of stock data
+- **Use Cases**: 
+  - Basic price trend analysis and momentum tracking
+  - OHLC (Open, High, Low, Close) pattern recognition
+  - Volume analysis and trading activity
+  - Daily returns and volatility assessment
+  - Support and resistance level identification
+
+### 1b. extended-stock-data.csv 🚀 **EXTENDED DATASET**
+**Purpose**: Historical stock market analysis (comprehensive)
+- **Columns**: Date, Price, Open, High, Low, Vol., Change%
+- **Records**: 50 trading days of stock data (Jan-Mar 2024)
+- **Use Cases**: 
+  - Advanced trend analysis with more data points
+  - Long-term pattern recognition and seasonality
+  - Comprehensive volatility analysis
+  - Better statistical significance for insights
+  - Testing chart performance with larger datasets
+
+### 2. sales-data.csv
+**Purpose**: Sales and revenue analysis (legacy dataset)
 - **Columns**: Date, Product, Category, Revenue, Units_Sold, Customer_Segment, Region
 - **Records**: 30 sales transactions
 - **Use Cases**: 
@@ -47,11 +69,12 @@ This folder contains sample CSV files that students can use to test their Data D
 ## How to Use These Files
 
 ### For Students:
-1. Download any of these CSV files to your computer
-2. Open your Data Discovery Tool application
-3. Use the file upload feature to load the data
-4. Explore the visualizations and insights generated
-5. Try different chart types and filtering options
+1. **Start with stock-data.csv** - This is the primary dataset for the stock analysis tool
+2. Download the CSV file to your computer
+3. Open your Stock Market Analysis Tool application
+4. Use the file upload feature to load the stock data
+5. Explore the specialized stock visualizations (OHLC charts, volume analysis, price trends)
+6. Try the AI-powered investment insights and market analysis features
 
 ### For Testing Features:
 - **Data Upload**: Test CSV parsing and validation
@@ -63,34 +86,38 @@ This folder contains sample CSV files that students can use to test their Data D
 ### Weekly Usage Guide:
 
 **Week 3-4 (Basic Functionality)**:
-- Start with sales-data.csv (simple structure)
-- Test basic chart creation and data display
+- Start with stock-data.csv (specialized stock structure)
+- Test stock chart creation and price data display
+- Understand OHLC data format
 
 **Week 5-6 (Advanced Features)**:
-- Use employee-data.csv for filtering and sorting
-- Test different chart types with weather-data.csv
+- Use stock-data.csv for volume analysis and trend identification
+- Test different stock chart types (price trends, volume bars, daily returns)
+- Implement stock-specific filtering and sorting
 
 **Week 7-8 (Complex Analysis)**:
-- Combine multiple datasets
-- Use customer-data.csv for advanced analytics
+- Add AI-powered stock analysis features
+- Use stock-data.csv for advanced financial metrics
+- Implement investment insights and market analysis
 
 **Week 9-10 (Final Project)**:
-- Test with all datasets
-- Demonstrate full application capabilities
+- Test with comprehensive stock datasets
+- Demonstrate full stock analysis capabilities
+- Create professional investment reports
 
 ## Data Characteristics
 
-### Data Types Represented:
-- **Numerical**: Revenue, Salary, Temperature, Age
-- **Categorical**: Product Category, Department, Gender
-- **Date/Time**: Transaction dates, observation dates
-- **Boolean**: Online_Shopping (Yes/No)
-- **Text**: Names, Cities, Brand preferences
+### Stock Data Types Represented:
+- **Financial Prices**: Price, Open, High, Low (currency values)
+- **Volume**: Trading volume (large integers)
+- **Percentages**: Change% (percentage values with % symbol)
+- **Date/Time**: Trading dates (YYYY-MM-DD format)
+- **Calculated Metrics**: Daily returns, volatility, price ranges
 
 ### Data Complexity Levels:
-- **Beginner**: sales-data.csv (straightforward structure)
-- **Intermediate**: employee-data.csv, weather-data.csv (mixed data types)
-- **Advanced**: customer-data.csv (complex relationships)
+- **Beginner**: stock-data.csv (standard OHLC format)
+- **Intermediate**: Multiple stock symbols or longer time periods
+- **Advanced**: Real-time data feeds or complex financial derivatives
 
 ## Troubleshooting Sample Data
 
@@ -107,10 +134,13 @@ This folder contains sample CSV files that students can use to test their Data D
 
 ## Creating Custom Test Data
 
-Students can create their own CSV files following these guidelines:
-- Include column headers in the first row
-- Mix different data types (numbers, text, dates)
+Students can create their own stock CSV files following these guidelines:
+- **Required columns**: Date, Price, Open, High, Low, Vol., Change%
+- **Date format**: YYYY-MM-DD (e.g., 2024-01-15)
+- **Price format**: Decimal numbers (e.g., 150.25)
+- **Volume format**: Large integers (e.g., 2500000)
+- **Change format**: Percentage with % symbol (e.g., 1.5% or -2.1%)
 - Keep file size reasonable (under 1MB for testing)
-- Ensure data quality (no missing values in key columns)
+- Ensure data quality (no missing values in key financial columns)
 
-These sample files are designed to provide realistic, engaging datasets that demonstrate the full capabilities of the Data Discovery Tool while being simple enough for educational purposes.
+These sample files are designed to provide realistic, engaging stock market datasets that demonstrate the full capabilities of the Stock Market Analysis Tool while being simple enough for educational purposes.

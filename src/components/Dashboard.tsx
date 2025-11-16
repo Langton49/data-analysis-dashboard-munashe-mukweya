@@ -1,12 +1,12 @@
 
 // ==========================================
-// 📊 WEEK 4+: Dashboard.tsx - Main Data Visualization Component
+// 📊 Stock Market Analyzer Dashboard - Professional Stock Analysis Interface
 // ==========================================
-// This is the main dashboard that displays after data is uploaded
-// Students will enhance this component throughout weeks 4-10
+// This is the main stock analysis dashboard that displays comprehensive
+// market analysis after historical stock data is uploaded
 
 import { useState, useMemo, useEffect } from 'react';
-import { Download, BarChart3, Table as TableIcon, FileText } from 'lucide-react';
+import { Download, TrendingUp, FileText, DollarSign } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DataRow } from '@/types/data';
@@ -181,34 +181,34 @@ ${Object.entries(summary.columnTypes)
                 variant="ghost" 
                 size="sm"
                 onClick={handleExportCSV} 
-                className="font-light"
+                className="font-light hover:bg-green-100 dark:hover:bg-green-900"
               >
                 <Download className="h-4 w-4 mr-2" />
-                Export Data
+                Export Stock Data
               </Button>
               <Button 
                 variant="ghost" 
                 size="sm"
                 onClick={handleExportInsights}
-                className="font-light"
+                className="font-light hover:bg-blue-100 dark:hover:bg-blue-900"
               >
                 <FileText className="h-4 w-4 mr-2" />
-                Export Report
+                Export Analysis Report
               </Button>
             </div>
           </div>
           
-          {/* Stats Bar */}
+          {/* Stock Data Stats Bar */}
           <div className="flex items-center gap-6 text-sm text-gray-500 dark:text-gray-400 font-light">
-            <span>{data.length.toLocaleString()} rows</span>
+            <span>{data.length.toLocaleString()} trading days</span>
             <span>•</span>
-            <span>{Object.keys(data[0] || {}).length} columns</span>
+            <span>{Object.keys(data[0] || {}).length} data points</span>
             <span>•</span>
-            <span>{summary.numericColumns} numeric</span>
+            <span>{summary.numericColumns} financial metrics</span>
             <span>•</span>
             <span>
               {Object.values(summary.missingValues).every(count => count === 0) ? '100%' : 
-               `${(100 - (Object.values(summary.missingValues).reduce((a, b) => a + b, 0) / (summary.totalRows * summary.totalColumns) * 100)).toFixed(1)}%`} complete
+               `${(100 - (Object.values(summary.missingValues).reduce((a, b) => a + b, 0) / (summary.totalRows * summary.totalColumns) * 100)).toFixed(1)}%`} data quality
             </span>
           </div>
         </div>
@@ -217,41 +217,53 @@ ${Object.entries(summary.columnTypes)
         <div className="space-y-6">
           {activeTab === 'overview' && (
             <>
-              {/* Minimalist Summary Cards */}
+              {/* Stock Market Summary Cards */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <Card className="border-gray-200 dark:border-gray-800">
+                <Card className="border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950">
                   <CardHeader className="pb-3">
-                    <CardTitle className="text-sm font-light text-gray-500 dark:text-gray-400">Total Records</CardTitle>
+                    <CardTitle className="text-sm font-light text-blue-600 dark:text-blue-400 flex items-center gap-2">
+                      <TrendingUp className="h-4 w-4" />
+                      Trading Days
+                    </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-3xl font-light">{summary.totalRows.toLocaleString()}</div>
+                    <div className="text-3xl font-light text-blue-700 dark:text-blue-300">{summary.totalRows.toLocaleString()}</div>
                   </CardContent>
                 </Card>
                 
-                <Card className="border-gray-200 dark:border-gray-800">
+                <Card className="border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-950">
                   <CardHeader className="pb-3">
-                    <CardTitle className="text-sm font-light text-gray-500 dark:text-gray-400">Columns</CardTitle>
+                    <CardTitle className="text-sm font-light text-green-600 dark:text-green-400 flex items-center gap-2">
+                      <DollarSign className="h-4 w-4" />
+                      Data Points
+                    </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-3xl font-light">{summary.totalColumns}</div>
+                    <div className="text-3xl font-light text-green-700 dark:text-green-300">{summary.totalColumns}</div>
                   </CardContent>
                 </Card>
                 
-                <Card className="border-gray-200 dark:border-gray-800">
+                <Card className="border-purple-200 dark:border-purple-800 bg-purple-50 dark:bg-purple-950">
                   <CardHeader className="pb-3">
-                    <CardTitle className="text-sm font-light text-gray-500 dark:text-gray-400">Numeric</CardTitle>
+                    <CardTitle className="text-sm font-light text-purple-600 dark:text-purple-400 flex items-center gap-2">
+                      <FileText className="h-4 w-4" />
+                      Financial Metrics
+                    </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-3xl font-light">{summary.numericColumns}</div>
+                    <div className="text-3xl font-light text-purple-700 dark:text-purple-300">{summary.numericColumns}</div>
                   </CardContent>
                 </Card>
                 
-                <Card className="border-gray-200 dark:border-gray-800">
+                <Card className="border-cyan-200 dark:border-cyan-800 bg-cyan-50 dark:bg-cyan-950">
                   <CardHeader className="pb-3">
-                    <CardTitle className="text-sm font-light text-gray-500 dark:text-gray-400">Quality</CardTitle>
+                    <CardTitle className="text-sm font-light text-cyan-600 dark:text-cyan-400 flex items-center gap-2">
+                      <Download className="h-4 w-4" />
+                      Data Quality
+                    </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-3xl font-light">
+                    <div className="text-3xl font-light text-cyan-700 dark:text-cyan-300">
                       {Object.values(summary.missingValues).every(count => count === 0) ? '100%' : 
                        `${(100 - (Object.values(summary.missingValues).reduce((a, b) => a + b, 0) / (summary.totalRows * summary.totalColumns) * 100)).toFixed(1)}%`}
                     </div>

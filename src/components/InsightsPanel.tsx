@@ -1,6 +1,5 @@
 import { TrendingUp, AlertTriangle, BarChart3, Info, Sparkles } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { DataInsight, DataRow } from "@/types/data";
 import { Button } from "./ui/button";
 import { useState, useEffect } from "react";
@@ -110,25 +109,25 @@ const InsightsPanel = ({
 
 	const handleGenerateInsight = async () => {
 		setIsGenerating(true);
-		
+
 		try {
 			// Get API key from environment
 			const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
-			
+
 			// Prepare data context
 			const summary = getDataSummary(data);
 			const numericColumns = Object.entries(summary.columnTypes)
 				.filter(([_, type]) => type === 'numeric')
 				.map(([col]) => col);
-			
+
 			const dataContext = {
 				summary,
 				insights: insights.slice(0, 5),
 				numericColumns
 			};
-			
+
 			let result;
-			
+
 			if (!apiKey) {
 				// Use fallback if no API key
 				toast({
@@ -146,7 +145,7 @@ const InsightsPanel = ({
 					variant: "default"
 				});
 			}
-			
+
 			if (onAiInsightsChange) {
 				onAiInsightsChange(result);
 			}
@@ -157,19 +156,19 @@ const InsightsPanel = ({
 				description: "Failed to generate insights. Using fallback analysis.",
 				variant: "destructive"
 			});
-			
+
 			// Fallback to mock insights
 			const summary = getDataSummary(data);
 			const numericColumns = Object.entries(summary.columnTypes)
 				.filter(([_, type]) => type === 'numeric')
 				.map(([col]) => col);
-			
+
 			const fallbackInsights = getMockInsights({
 				summary,
 				insights: insights.slice(0, 5),
 				numericColumns
 			});
-			
+
 			if (onAiInsightsChange) {
 				onAiInsightsChange(fallbackInsights);
 			}
@@ -215,8 +214,8 @@ const InsightsPanel = ({
 			<CardHeader>
 				<CardTitle className="flex items-center justify-between">
 					<span className="text-base font-light">Insights</span>
-					<Button 
-						onClick={handleGenerateInsight} 
+					<Button
+						onClick={handleGenerateInsight}
 						disabled={isGenerating}
 						variant="ghost"
 						size="sm"

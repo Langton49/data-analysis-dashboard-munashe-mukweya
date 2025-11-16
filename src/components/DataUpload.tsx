@@ -1,13 +1,9 @@
 
 // ==========================================
-// 📤 WEEK 3: DataUpload.tsx - File Upload Component
+// 📤 Stock Data Upload Component - Historical Stock Data Processing
 // ==========================================
-// This component handles CSV file uploads and will be enhanced throughout the course
-// 🔧 WEEK 3: Students will add form validation and user input handling
-// 🔧 WEEK 4: Students will enhance data processing capabilities  
-// 🔧 WEEK 5: Students will add advanced file handling and validation
-// 🔧 WEEK 6: Students will connect this to chart generation
-// 🔧 WEEK 7: Students will integrate with external APIs
+// This component handles historical stock data CSV uploads for comprehensive
+// market analysis including OHLC charts, volume analysis, and AI insights
 
 import { useState, useCallback } from 'react';
 import { Upload, FileText, AlertCircle, CheckCircle, X, FileSpreadsheet } from 'lucide-react';
@@ -60,7 +56,7 @@ const DataUpload = ({ onDataLoad }: DataUploadProps) => {
   const validateFile = (file: File): string | null => {
     // Check file type
     if (!file.name.toLowerCase().endsWith('.csv')) {
-      return 'Please upload a CSV file (.csv extension required)';
+      return 'Please upload a historical stock data CSV file (.csv extension required)';
     }
 
     // Check file size (10MB limit)
@@ -70,7 +66,7 @@ const DataUpload = ({ onDataLoad }: DataUploadProps) => {
 
     // Check if file is empty
     if (file.size === 0) {
-      return 'File appears to be empty. Please upload a valid CSV file';
+      return 'File appears to be empty. Please upload a valid stock data CSV file';
     }
 
     return null;
@@ -322,11 +318,11 @@ const DataUpload = ({ onDataLoad }: DataUploadProps) => {
               
               <div>
                 <p className="text-lg font-light">
-                  {isLoading ? 'Processing your file...' : 
-                   isDragging ? 'Drop your CSV file here' : 'Drop your CSV file here'}
+                  {isLoading ? 'Processing your stock data...' : 
+                   isDragging ? 'Drop your stock data CSV here' : 'Drop your stock data CSV here'}
                 </p>
                 <p className="text-sm text-gray-500 dark:text-gray-400 font-light mt-1">
-                  {isLoading ? 'Please wait while we analyze your data' : 'or click to browse your files'}
+                  {isLoading ? 'Please wait while we analyze your market data' : 'or click to browse your historical stock files'}
                 </p>
               </div>
 
@@ -334,7 +330,7 @@ const DataUpload = ({ onDataLoad }: DataUploadProps) => {
                 <div className="w-full max-w-xs space-y-2">
                   <Progress value={uploadProgress} className="h-2" />
                   <p className="text-xs text-gray-500 dark:text-gray-400 font-light">
-                    {uploadProgress < 90 ? 'Reading file...' : 'Analyzing data...'}
+                    {uploadProgress < 90 ? 'Reading stock data...' : 'Analyzing market trends...'}
                   </p>
                 </div>
               )}
@@ -347,7 +343,7 @@ const DataUpload = ({ onDataLoad }: DataUploadProps) => {
                   className="flex items-center space-x-2 font-light"
                 >
                   <FileText className="h-4 w-4" />
-                  <span>Choose File</span>
+                  <span>Choose Stock Data File</span>
                 </Button>
               )}
 
@@ -364,18 +360,19 @@ const DataUpload = ({ onDataLoad }: DataUploadProps) => {
 
           <div className="mt-6 space-y-4">
             <div className="text-xs text-gray-500 dark:text-gray-400 font-light text-center space-y-1">
-              <p><strong className="font-normal">Supported format:</strong> CSV files with headers in the first row</p>
-              <p><strong className="font-normal">File requirements:</strong> UTF-8 encoding, comma-separated values</p>
-              <p><strong className="font-normal">Data types:</strong> Numbers, text, booleans (true/false) automatically detected</p>
+              <p><strong className="font-normal">Expected columns:</strong> Date, Price, Open, High, Low, Vol., Change%</p>
+              <p><strong className="font-normal">File format:</strong> CSV with headers, UTF-8 encoding, comma-separated</p>
+              <p><strong className="font-normal">Sample data:</strong> Check the sample-data folder for examples</p>
             </div>
             
             <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4">
               <h4 className="text-sm font-light mb-2">Sample CSV Format:</h4>
               <pre className="text-xs text-gray-600 dark:text-gray-400 font-mono">
-{`Name,Age,Score,Active
-John Doe,25,85.5,true
-Jane Smith,30,92.0,false
-Bob Johnson,28,78.5,true`}
+{`Date,Price,Open,High,Low,Vol.,Change %
+11/14/2025,276.41,271.40,278.56,270.70,31.65M,-0.78%
+11/13/2025,278.57,282.34,282.84,277.24,29.49M,-2.84%
+11/12/2025,286.71,291.67,292.01,283.69,24.83M,-1.58%
+11/11/2025,291.31,287.74,291.92,287.32,19.84M,0.42%`}
               </pre>
             </div>
           </div>

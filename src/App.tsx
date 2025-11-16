@@ -13,7 +13,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query"; // For
 import { BrowserRouter, Routes, Route } from "react-router-dom"; // For navigation between pages
 import { ErrorBoundary } from "react-error-boundary"; // For graceful error handling
 import { ErrorFallback } from "./components/ErrorFallback"; // Custom error UI
-import { DashboardSkeleton } from "./components/skeletons"; // Loading fallback
+import { StartScreenSkeleton } from "./components/skeletons"; // Loading fallback
 
 // 🚀 Code Splitting: Lazy load pages for better initial load performance
 // Main pages - loaded on demand
@@ -64,7 +64,7 @@ function App() {
               onReset={() => window.location.reload()}
             >
               {/* Suspense wrapper for lazy-loaded routes */}
-              <Suspense fallback={<DashboardSkeleton />}>
+              <Suspense fallback={<StartScreenSkeleton />}>
                 <Routes>
                   {/* 🏠 Main route - shows your homepage */}
                   <Route path="/" element={<Index />} />

@@ -55,19 +55,19 @@ const Index = () => {
           
           <header className="text-center mb-12">
             {/* 🎯 Logo and Title */}
-            <div className="flex items-center justify-center mb-6" role="img" aria-label="Data Visualizer logo">
-              <div className="bg-gray-900 dark:bg-gray-100 p-4 rounded-lg">
-                <Database className="h-12 w-12 text-white dark:text-gray-900" aria-hidden="true" />
+            <div className="flex items-center justify-center mb-6" role="img" aria-label="Stock Market Analyzer logo">
+              <div className="bg-gradient-to-br from-green-600 to-blue-600 p-4 rounded-lg shadow-lg">
+                <TrendingUp className="h-12 w-12 text-white" aria-hidden="true" />
               </div>
             </div>
             
-            {/* 📝 WEEK 1: Students customize this title with their name */}
+            {/* 📝 Professional Stock Analysis Platform */}
             <h1 className="text-5xl font-light tracking-tight text-gray-900 dark:text-gray-100 mb-4">
-              Data Visualizer
+              Stock Market Analyzer
             </h1>
-            <p className="text-xl font-light text-gray-500 dark:text-gray-400 mb-2" role="doc-subtitle">Interactive Data Analysis</p>
+            <p className="text-xl font-light text-gray-500 dark:text-gray-400 mb-2" role="doc-subtitle">Professional Stock Analysis Platform</p>
             <p className="text-lg font-light text-gray-500 dark:text-gray-400 max-w-2xl mx-auto">
-              Upload your dataset and instantly discover insights, visualize trends, and explore your data with interactive charts and analytics.
+              Upload historical stock data and get comprehensive market analysis with interactive OHLC charts, volume analysis, and AI-powered investment insights.
             </p>
             {/* 🆕 WEEK 3: Live Event Handling Demo (removed NameInput from homepage) */}
             {/* <div className="mt-8 mb-8 flex justify-center">
@@ -83,55 +83,102 @@ const Index = () => {
           </header>
 
           <main id="main-content" tabIndex={-1}>
+            {/* 📚 Quick Tutorial Section */}
+            <section aria-label="How to use" className="mb-12 max-w-4xl mx-auto">
+              <Card className="border-gray-200 dark:border-gray-800 bg-gradient-to-r from-blue-50 to-green-50 dark:from-blue-950 dark:to-green-950">
+                <CardHeader className="text-center">
+                  <CardTitle className="text-2xl font-light mb-2">How to Use Stock Market Analyzer</CardTitle>
+                  <CardDescription className="font-light text-base">
+                    Get professional stock analysis in 3 simple steps
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid md:grid-cols-3 gap-6">
+                    <div className="text-center">
+                      <div className="bg-blue-100 dark:bg-blue-900 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <span className="text-blue-700 dark:text-blue-300 font-semibold">1</span>
+                      </div>
+                      <h3 className="font-medium mb-2">Upload Stock Data</h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        Upload a CSV file with historical stock data including Date, Price, Open, High, Low, Volume, and Change%
+                      </p>
+                    </div>
+                    <div className="text-center">
+                      <div className="bg-green-100 dark:bg-green-900 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <span className="text-green-700 dark:text-green-300 font-semibold">2</span>
+                      </div>
+                      <h3 className="font-medium mb-2">Explore Charts</h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        View OHLC analysis, volume trends, price movements, and daily returns with full-screen capabilities
+                      </p>
+                    </div>
+                    <div className="text-center">
+                      <div className="bg-purple-100 dark:bg-purple-900 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <span className="text-purple-700 dark:text-purple-300 font-semibold">3</span>
+                      </div>
+                      <h3 className="font-medium mb-2">Get AI Insights</h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        Chat with AI to get investment insights, trend analysis, and market recommendations
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </section>
+
             {/* 🎨 Features Grid - Shows what your app can do */}
             <section aria-label="Features" className="grid md:grid-cols-3 gap-4 mb-12">
-                {/* 📤 Upload Feature Card */}
-                <Card className="border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700 transition-colors" role="article">
+                {/* 📤 Stock Data Upload Feature Card */}
+                <Card className="border-gray-200 dark:border-gray-800 hover:border-green-300 dark:hover:border-green-700 transition-colors" role="article">
                   <CardHeader className="text-center">
-                    <div className="bg-gray-100 dark:bg-gray-800 w-16 h-16 rounded-lg flex items-center justify-center mx-auto mb-4" role="img" aria-label="Upload icon">
-                      <Upload className="h-8 w-8 text-gray-700 dark:text-gray-300" aria-hidden="true" />
+                    <div className="bg-green-100 dark:bg-green-900 w-16 h-16 rounded-lg flex items-center justify-center mx-auto mb-4" role="img" aria-label="Upload icon">
+                      <Upload className="h-8 w-8 text-green-700 dark:text-green-300" aria-hidden="true" />
                     </div>
-                    <CardTitle className="text-xl font-light">Easy Data Upload</CardTitle>
+                    <CardTitle className="text-xl font-light">Historical Stock Data</CardTitle>
                     <CardDescription className="font-light">
-                      Simply drag and drop your CSV files or click to browse. Support for various data formats.
+                      Upload CSV files with Date, Price, Open, High, Low, Volume, and Change% columns for comprehensive analysis.
                     </CardDescription>
                   </CardHeader>
                 </Card>
 
-                {/* 📊 Charts Feature Card */}
-                <Card className="border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700 transition-colors" role="article">
+                {/* 📊 Stock Charts Feature Card */}
+                <Card className="border-gray-200 dark:border-gray-800 hover:border-blue-300 dark:hover:border-blue-700 transition-colors" role="article">
                   <CardHeader className="text-center">
-                    <div className="bg-gray-100 dark:bg-gray-800 w-16 h-16 rounded-lg flex items-center justify-center mx-auto mb-4" role="img" aria-label="Charts icon">
-                      <BarChart3 className="h-8 w-8 text-gray-700 dark:text-gray-300" aria-hidden="true" />
+                    <div className="bg-blue-100 dark:bg-blue-900 w-16 h-16 rounded-lg flex items-center justify-center mx-auto mb-4" role="img" aria-label="Charts icon">
+                      <BarChart3 className="h-8 w-8 text-blue-700 dark:text-blue-300" aria-hidden="true" />
                     </div>
-                    <CardTitle className="text-xl font-light">Interactive Charts</CardTitle>
+                    <CardTitle className="text-xl font-light">Professional Stock Charts</CardTitle>
                     <CardDescription className="font-light">
-                      Automatically generate bar charts, line graphs, pie charts, and more from your data.
+                      OHLC analysis, volume charts, price trends, and daily returns with full-screen viewing and interactive controls.
                     </CardDescription>
                   </CardHeader>
                 </Card>
 
-                {/* 🧠 Insights Feature Card */}
-                <Card className="border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700 transition-colors" role="article">
+                {/* 🧠 Investment Insights Feature Card */}
+                <Card className="border-gray-200 dark:border-gray-800 hover:border-purple-300 dark:hover:border-purple-700 transition-colors" role="article">
                   <CardHeader className="text-center">
-                    <div className="bg-gray-100 dark:bg-gray-800 w-16 h-16 rounded-lg flex items-center justify-center mx-auto mb-4" role="img" aria-label="Insights icon">
-                      <TrendingUp className="h-8 w-8 text-gray-700 dark:text-gray-300" aria-hidden="true" />
+                    <div className="bg-purple-100 dark:bg-purple-900 w-16 h-16 rounded-lg flex items-center justify-center mx-auto mb-4" role="img" aria-label="Insights icon">
+                      <TrendingUp className="h-8 w-8 text-purple-700 dark:text-purple-300" aria-hidden="true" />
                     </div>
-                    <CardTitle className="text-xl font-light">Smart Insights</CardTitle>
+                    <CardTitle className="text-xl font-light">AI Investment Insights</CardTitle>
                     <CardDescription className="font-light">
-                      Discover patterns, trends, and statistical insights automatically generated from your dataset.
+                      Get intelligent market analysis, trend predictions, and investment recommendations powered by advanced AI.
                     </CardDescription>
                   </CardHeader>
                 </Card>
             </section>
 
-            {/* 📤 Upload Section - Where users upload their data */}
-            <section aria-label="Data upload" className="max-w-2xl mx-auto">
+            {/* 📤 Upload Section - Where users upload their stock data */}
+            <section aria-label="Stock data upload" className="max-w-2xl mx-auto">
                 <Card className="border-gray-200 dark:border-gray-800">
                   <CardHeader className="text-center">
-                    <CardTitle className="text-2xl font-light">Get Started</CardTitle>
+                    <CardTitle className="text-2xl font-light">Start Your Analysis</CardTitle>
                     <CardDescription className="font-light">
-                      Upload your CSV file to begin exploring your data
+                      Upload your historical stock data CSV file to begin professional market analysis
+                      <br />
+                      <span className="text-xs text-gray-400 mt-2 block">
+                        Expected columns: Date, Price, Open, High, Low, Vol., Change%
+                      </span>
                     </CardDescription>
                   </CardHeader>
                   <CardContent>

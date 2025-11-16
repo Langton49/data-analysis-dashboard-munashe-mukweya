@@ -1,5 +1,6 @@
 export { SkeletonCard, SkeletonLine, SkeletonCircle, SkeletonButton } from './SkeletonCard';
 export { DashboardSkeleton } from './DashboardSkeleton';
+export { StartScreenSkeleton } from './StartScreenSkeleton';
 export { ChartSkeleton, PieChartSkeleton, LineChartSkeleton } from './ChartSkeleton';
 export { DataTableSkeleton } from './DataTableSkeleton';
 export { ChatSkeleton, ChatMessageSkeleton } from './ChatSkeleton';

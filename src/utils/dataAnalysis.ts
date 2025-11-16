@@ -97,6 +97,14 @@ export const generateDataInsights = (data: DataRow[]): DataInsight[] => {
   const summary = getDataSummary(data);
   const columns = Object.keys(data[0]);
 
+  // Check if this is stock data
+  const stockColumns = ['Date', 'Price', 'Open', 'High', 'Low', 'Vol.', 'Change%'];
+  const isStockData = stockColumns.some(col => columns.includes(col));
+
+  if (isStockData) {
+    return generateStockInsights(data);
+  }
+
   // Dataset overview insight
   insights.push({
     type: 'summary',
@@ -197,6 +205,145 @@ export const generateDataInsights = (data: DataRow[]): DataInsight[] => {
   }
 
   return insights.slice(0, 10); // Return top 10 insights
+};
+
+// Stock-specific insights generation
+export const generateStockInsights = (data: DataRow[]): DataInsight[] => {
+  const insights: DataInsight[] = [];
+  const columns = Object.keys(data[0]);
+  
+  // Find stock columns
+  const priceCol = columns.find(col => col.toLowerCase().includes('price')) || 'Price';
+  const openCol = columns.find(col => col.toLowerCase().includes('open')) || 'Open';
+  const highCol = columns.find(col => col.toLowerCase().includes('high')) || 'High';
+  const lowCol = columns.find(col => col.toLowerCase().includes('low')) || 'Low';
+  const volumeCol = columns.find(col => col.toLowerCase().includes('vol')) || 'Vol.';
+  const changeCol = columns.find(col => col.toLowerCase().includes('change')) || 'Change%';
+  const dateCol = columns.find(col => col.toLowerCase().includes('date')) || 'Date';
+
+  // Parse numeric values
+  const parseValue = (val: any) => {
+    if (typeof val === 'number') return val;
+    if (typeof val === 'string') {
+      const cleaned = val.replace('%', '').replace(',', '');
+      const parsed = parseFloat(cleaned);
+      return isNaN(parsed) ? 0 : parsed;
+    }
+    return 0;
+  };
+
+  const prices = data.map(row => parseValue(row[priceCol])).filter(p => p > 0);
+  const volumes = data.map(row => parseValue(row[volumeCol])).filter(v => v > 0);
+  const changes = data.map(row => parseValue(row[changeCol]));
+  const highs = data.map(row => parseValue(row[highCol])).filter(h => h > 0);
+  const lows = data.map(row => parseValue(row[lowCol])).filter(l => l > 0);
+
+  if (prices.length === 0) return insights;
+
+  // Stock overview
+  const currentPrice = prices[0];
+  const highestPrice = Math.max(...highs);
+  const lowestPrice = Math.min(...lows);
+  const totalReturn = changes.reduce((sum, c) => sum + c, 0);
+  const avgVolume = volumes.reduce((sum, v) => sum + v, 0) / volumes.length;
+
+  insights.push({
+    type: 'summary',
+    title: 'Stock Performance Overview',
+    description: `Analyzing ${data.length} trading days. Current price: $${currentPrice.toFixed(2)}, Total return: ${totalReturn.toFixed(2)}%`,
+    confidence: 'high',
+    details: { currentPrice, totalReturn, tradingDays: data.length }
+  });
+
+  // Price volatility analysis
+  const volatility = Math.sqrt(changes.reduce((sum, c) => sum + Math.pow(c, 2), 0) / changes.length);
+  let volatilityLevel = 'Low';
+  if (volatility > 3) volatilityLevel = 'High';
+  else if (volatility > 1.5) volatilityLevel = 'Medium';
+
+  insights.push({
+    type: 'trend',
+    title: `${volatilityLevel} Volatility Detected`,
+    description: `Stock shows ${volatilityLevel.toLowerCase()} volatility with ${volatility.toFixed(2)}% average daily movement. ${volatilityLevel === 'High' ? 'Consider risk management strategies.' : volatilityLevel === 'Medium' ? 'Moderate risk profile.' : 'Relatively stable stock.'}`,
+    confidence: 'high',
+    details: { volatility, level: volatilityLevel }
+  });
+
+  // Trading volume insights
+  const highVolumeThreshold = avgVolume * 1.5;
+  const highVolumeDays = data.filter(row => parseValue(row[volumeCol]) > highVolumeThreshold).length;
+  
+  if (highVolumeDays > 0) {
+    insights.push({
+      type: 'outlier',
+      title: 'High Volume Trading Days',
+      description: `${highVolumeDays} days showed unusually high trading volume (>50% above average). This often indicates significant market events or news.`,
+      confidence: 'medium',
+      details: { highVolumeDays, avgVolume, threshold: highVolumeThreshold }
+    });
+  }
+
+  // Price trend analysis
+  const recentPrices = prices.slice(0, 5);
+  const olderPrices = prices.slice(-5);
+  const recentAvg = recentPrices.reduce((sum, p) => sum + p, 0) / recentPrices.length;
+  const olderAvg = olderPrices.reduce((sum, p) => sum + p, 0) / olderPrices.length;
+  const trendDirection = recentAvg > olderAvg ? 'upward' : 'downward';
+  const trendStrength = Math.abs((recentAvg - olderAvg) / olderAvg * 100);
+
+  insights.push({
+    type: 'trend',
+    title: `${trendDirection.charAt(0).toUpperCase() + trendDirection.slice(1)} Price Trend`,
+    description: `Stock shows ${trendDirection} momentum with ${trendStrength.toFixed(1)}% change between recent and earlier periods. ${trendDirection === 'upward' ? 'Positive momentum detected.' : 'Bearish trend observed.'}`,
+    confidence: trendStrength > 5 ? 'high' : 'medium',
+    details: { direction: trendDirection, strength: trendStrength, recentAvg, olderAvg }
+  });
+
+  // Support and resistance levels
+  const priceRange = highestPrice - lowestPrice;
+  const supportLevel = lowestPrice + (priceRange * 0.2);
+  const resistanceLevel = highestPrice - (priceRange * 0.2);
+
+  insights.push({
+    type: 'correlation',
+    title: 'Key Price Levels',
+    description: `Potential support around $${supportLevel.toFixed(2)} and resistance near $${resistanceLevel.toFixed(2)}. Price range: $${priceRange.toFixed(2)}`,
+    confidence: 'medium',
+    details: { support: supportLevel, resistance: resistanceLevel, range: priceRange }
+  });
+
+  // Consecutive gains/losses
+  let consecutiveGains = 0;
+  let consecutiveLosses = 0;
+  let maxGainStreak = 0;
+  let maxLossStreak = 0;
+
+  changes.forEach(change => {
+    if (change > 0) {
+      consecutiveGains++;
+      consecutiveLosses = 0;
+      maxGainStreak = Math.max(maxGainStreak, consecutiveGains);
+    } else if (change < 0) {
+      consecutiveLosses++;
+      consecutiveGains = 0;
+      maxLossStreak = Math.max(maxLossStreak, consecutiveLosses);
+    }
+  });
+
+  if (maxGainStreak >= 3 || maxLossStreak >= 3) {
+    const streakType = maxGainStreak >= maxLossStreak ? 'gain' : 'loss';
+    const streakLength = Math.max(maxGainStreak, maxLossStreak);
+    
+    insights.push({
+      type: 'outlier',
+      title: `${streakLength}-Day ${streakType.charAt(0).toUpperCase() + streakType.slice(1)} Streak`,
+      description: `Longest consecutive ${streakType} streak was ${streakLength} days. ${streakType === 'gain' ? 'Strong bullish momentum period.' : 'Significant bearish pressure period.'}`,
+      confidence: 'medium',
+      details: { streakType, streakLength, maxGainStreak, maxLossStreak }
+    });
+  }
+
+  return insights.slice(0, 8);
 };
 
 export const getNumericColumns = (data: DataRow[]): string[] => {

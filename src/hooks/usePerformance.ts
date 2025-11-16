@@ -84,7 +84,7 @@ export function useVirtualScroll<T>(
   const visibleRange = useMemo(() => {
     const startIndex = Math.floor(scrollTop / itemHeight);
     const endIndex = Math.ceil((scrollTop + containerHeight) / itemHeight);
-    
+
     const buffer = 5;
     return {
       start: Math.max(0, startIndex - buffer),
@@ -132,7 +132,7 @@ export function usePerformanceMonitor(componentName: string, enabled: boolean = 
 
   useEffect(() => {
     if (!enabled) return;
-    
+
     renderStartTime.current = performance.now();
 
     return () => {

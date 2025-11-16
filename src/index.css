@@ -307,3 +307,82 @@ textarea:disabled {
   height: 1px;
   overflow: hidden;
 }
+
+/* Full-screen modal fixes */
+.fullscreen-modal-overlay {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  z-index: 50000 !important;
+  margin: 0 !important;
+  padding: 1rem !important;
+  background: rgba(0, 0, 0, 0.8) !important;
+  backdrop-filter: blur(4px) !important;
+}
+
+.fullscreen-modal-content {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;
+  max-height: none !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+/* Ensure charts fill their containers properly */
+.recharts-wrapper {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.recharts-surface {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Prevent any background elements from interfering */
+body.modal-open {
+  overflow: hidden !important;
+}
+
+html.modal-open {
+  overflow: hidden !important;
+}
+
+/* Legend icon size customization */
+.recharts-legend-item-text {
+  font-size: inherit !important;
+}
+
+.recharts-legend-icon {
+  width: 8px !important;
+  height: 8px !important;
+}
+
+/* Full-screen legend icons can be slightly larger */
+.fullscreen-modal-content .recharts-legend-icon {
+  width: 12px !important;
+  height: 12px !important;
+}
+
+/* Full-screen chart improvements */
+.fullscreen-modal-content .recharts-wrapper {
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 400px !important;
+}
+
+.fullscreen-modal-content .recharts-surface {
+  overflow: visible !important;
+}
+
+/* Ensure X-axis labels have enough space in full-screen */
+.fullscreen-modal-content .recharts-cartesian-axis-tick-value {
+  font-size: 14px !important;
+}
+
+.fullscreen-modal-content .recharts-legend-wrapper {
+  padding-top: 20px !important;
+}

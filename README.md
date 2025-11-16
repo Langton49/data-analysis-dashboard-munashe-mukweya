@@ -1,7 +1,7 @@
 
-# 📊 Data Visualizer: Interactive Data Analysis Dashboard
+# 📈 Stock Data Analyzer: Professional Stock Market Analysis Platform
 
-**Upload your CSV data and instantly discover insights with interactive charts and AI-powered analysis**
+**Upload historical stock data and get comprehensive market analysis with interactive charts and AI-powered investment insights**
 
 ## 🚀 Quick Start
 
@@ -67,14 +67,28 @@ git --version   # Any recent version
 - **[Git Workflow Tutorial](docs/template-setup/GIT_WORKFLOW_TUTORIAL.md)** - Learn Git while building your project
 - **[Troubleshooting Guide](docs/template-setup/TROUBLESHOOTING_GUIDE.md)** - Solve common issues quickly
 
-## �📖 What You'll Build
+## 📖 What You'll Build
 
-You're building a **professional data analysis platform** that:
-- ✅ Lets users upload CSV files
-- ✅ Shows data in interactive tables and charts
-- ✅ Provides AI-powered insights about the data
-- ✅ Has a chat interface to ask questions about the data
-- ✅ Exports processed data and visualizations
+You're building a **professional stock market analysis platform** that transforms raw stock data into actionable investment insights:
+
+### 🎯 Core Features
+- **📊 Professional Stock Charts**: OHLC analysis, volume trends, price movements, and daily returns
+- **🔍 Full-Screen Analysis**: Expandable charts with enhanced detail and interactive controls  
+- **📈 Smart Data Processing**: Automatic chronological sorting and intelligent volume parsing
+- **🎨 Financial Color Coding**: Industry-standard green/red for gains/losses, professional styling
+- **🤖 AI Investment Insights**: Chat interface for market analysis and investment recommendations
+- **📋 Interactive Data Tables**: Color-coded financial metrics with smart date sorting
+- **⚡ Performance Optimized**: Handles large datasets with windowing and navigation controls
+
+### 📁 Expected Data Format
+Your CSV files should include these columns:
+- **Date**: Trading date (YYYY-MM-DD format)
+- **Price**: Closing price
+- **Open**: Opening price  
+- **High**: Highest price of the day
+- **Low**: Lowest price of the day
+- **Vol.**: Trading volume (supports formats like 2,500,000 or 2.5M)
+- **Change%**: Daily percentage change
 
 ## 🎯 What This Project Teaches You
 
@@ -84,11 +98,11 @@ You're building a **professional data analysis platform** that:
 - Handling user interactions and file uploads
 - Adding types for reliability and better development experience
 
-### Data Visualization & Analysis
-- Processing and analyzing real data
-- Creating interactive charts and graphs
-- Generating meaningful insights from data
-- Building responsive, user-friendly interfaces
+### Stock Market Analysis & Visualization
+- Processing and analyzing historical stock data
+- Creating specialized financial charts (OHLC, volume, trends)
+- Generating investment insights and market analysis
+- Building responsive, professional trading interfaces
 
 ### Professional Development Skills
 - Working with APIs and external services
@@ -98,7 +112,7 @@ You're building a **professional data analysis platform** that:
 
 ## 📚 10-Week Progressive Learning Journey
 
-This course is designed as a complete 10-week experience where you'll build a professional-grade data analysis platform. Each week builds naturally on the previous, with a smooth progression from fundamental concepts to advanced features.
+This course is designed as a complete 10-week experience where you'll build a professional-grade stock market analysis platform. Each week builds naturally on the previous, with a smooth progression from fundamental React concepts to advanced financial data visualization and AI-powered investment insights.
 
 ### 🏗️ Foundation Phase (Weeks 1-4): Getting Started
 
@@ -279,6 +293,29 @@ This course is designed as a complete 10-week experience where you'll build a pr
 - Help debug each other's code
 - Present your progress weekly to build confidence
 
+## 📊 Sample Data & Getting Started
+
+### 🎯 Try It Now
+The project includes sample stock data files in the `sample-data/` folder:
+- `stock-data.csv` - Basic historical stock data
+- `extended-stock-data.csv` - Larger dataset for testing performance features
+- `large-stock-data.csv` - Comprehensive dataset for advanced analysis
+
+### 📁 Data Format Example
+```csv
+Date,Price,Open,High,Low,Vol.,Change%
+2024-01-02,150.25,148.50,152.10,147.80,2500000,1.2%
+2024-01-03,152.80,150.25,154.20,149.90,2800000,1.7%
+2024-01-04,149.60,152.80,153.50,148.20,3200000,-2.1%
+```
+
+### 🚀 Quick Demo
+1. Start the app: `npm run dev`
+2. Upload any file from `sample-data/`
+3. Explore the professional stock analysis dashboard
+4. Try the full-screen chart views
+5. Chat with AI about the stock performance
+
 ## 🚀 Free Deployment Options
 
 ### Option 1: Vercel (Recommended)
@@ -370,3 +407,99 @@ By the end of this 10-week journey, you'll have:
 ---
 
 **Remember:** This is a journey of growth! Every developer started where you are now. Focus on progress, not perfection, and celebrate each milestone along the way.
+
+## 🔍 **New Feature: Full-Screen Chart Analysis**
+
+### **Enhanced Chart Viewing Experience**
+Each chart now includes a **full-screen mode** for detailed analysis:
+
+- **📊 Expand Button**: Look for the expand icon (⛶) in the top-right corner of each chart
+- **🖥️ Full-Screen View**: Charts open in a modal overlay covering the entire screen
+- **📈 Enhanced Details**: Full-screen charts are larger with improved readability
+- **⌨️ Easy Navigation**: Press `ESC` key or click the X button to close
+- **🎯 Better Analysis**: Perfect for detailed technical analysis and pattern recognition
+
+### **Available in Full-Screen**:
+- **Price Movement Chart**: Detailed price and open price trends
+- **Trading Volume Chart**: Enhanced volume analysis with better scaling
+- **OHLC Analysis**: Comprehensive Open, High, Low, Close visualization
+- **Daily Returns Chart**: Detailed percentage change analysis
+
+### **How to Use**:
+1. Upload your stock data (CSV with Date, Price, Open, High, Low, Vol., Change% columns)
+2. Navigate to any chart in the dashboard
+3. Click the expand button (⛶) in the chart header
+4. Enjoy detailed full-screen analysis
+5. Press ESC or click X to return to dashboard view
+
+This feature makes it easier to spot trends, analyze patterns, and make informed investment decisions with your stock data!
+
+## 📊 **Complete Data Visualization**
+
+### **All Your Data, All the Time**
+Charts now display **all records** from your CSV file:
+
+- **🔄 No More Limits**: Previously limited to 15-50 records, now shows everything
+- **📈 Complete Trends**: See the full picture of your stock's performance
+- **🎯 Better Analysis**: Make decisions based on complete data, not samples
+- **⚡ Smart Performance**: Automatic optimization for large datasets (1000+ records)
+
+### **Intelligent Data Handling**:
+- **Chronological Sorting**: Data automatically sorted by date (oldest to newest) for proper trend analysis
+- **Smart Windowing**: Shows last 10 records by default for optimal performance
+- **Interactive Navigation**: Scroll and zoom controls to explore all data
+- **Performance Optimized**: Smooth charts regardless of dataset size
+- **Full Analysis**: Metrics calculated from complete dataset while showing windowed view
+
+### **Chart Navigation Controls**:
+- **◀▶ Scroll**: Navigate through time periods
+- **🔍 Zoom In/Out**: Adjust detail level (5-50+ records)
+- **🔄 Reset**: Return to last 10 records view
+- **📊 Show All**: Display entire dataset
+- **🖥️ Full-Screen**: Same controls available in expanded chart view
+
+See the complete guides:
+- [Chart Data Handling Guide](docs/CHART_DATA_HANDLING.md) - Data processing details
+- [Chart Windowing Guide](docs/CHART_WINDOWING.md) - Navigation and performance features
+
+## 🎨 **Enhanced Color Scheme for Better Analysis**
+
+### **Professional Financial Colors**
+The app now uses a sophisticated color scheme designed specifically for stock market analysis:
+
+- **🟢 Green**: Bullish trends, gains, support levels (positive performance)
+- **🔴 Red**: Bearish trends, losses, resistance levels (negative performance)  
+- **🔵 Blue**: Primary price data, closing prices (main information)
+- **🟦 Cyan**: Trading volume, market activity (liquidity indicators)
+- **🟣 Purple**: Volatility, risk metrics (uncertainty measures)
+- **⚫ Gray**: Reference data, opening prices (baseline information)
+
+### **Smart Color Features**:
+- **Dynamic Coloring**: Daily returns automatically show green for gains, red for losses
+- **Dark Mode Optimized**: All colors adapt beautifully for dark theme users
+- **Accessibility Friendly**: High contrast ratios and colorblind-safe combinations
+- **Industry Standard**: Follows traditional financial charting conventions
+
+### **Color-Coded Metrics Panel**:
+Each key metric now has its own themed color card for instant recognition and better visual hierarchy.
+
+### **Enhanced Data Table**:
+The data table now features intelligent color coding and smart date sorting:
+
+**Color Coding:**
+- **🔵 Blue Headers & Values**: Price data (Close, Current Price)
+- **🟦 Cyan**: Volume data and trading activity
+- **🟢 Green**: Positive changes, gains, high prices
+- **🔴 Red**: Negative changes, losses, low prices
+- **🟣 Purple**: Change percentages and volatility
+- **Smart Backgrounds**: Subtle highlighting for positive/negative returns
+
+**Smart Date Sorting:**
+- **📅 Chronological Order**: Date columns sort properly (not alphabetically)
+- **🔍 Auto-Detection**: Automatically recognizes date columns and formats
+- **📊 Proper Analysis**: Enables correct time-series data navigation
+
+See the complete guides:
+- [Color Scheme Guide](docs/COLOR_SCHEME_GUIDE.md) - Chart color meanings and usage
+- [Table Color Guide](docs/TABLE_COLOR_GUIDE.md) - Data table color enhancements
+- [Date Sorting Fix](docs/DATE_SORTING_FIX.md) - Chronological date sorting in tables
