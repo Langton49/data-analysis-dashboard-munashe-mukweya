@@ -18,18 +18,7 @@ npm run dev
 
 ## 🎯 Getting Started
 
-### For Students: Using This Template
-
-**This repository is a GitHub template designed for classroom use.**
-
-#### Option 1: Use GitHub Template (Recommended)
-1. **Click the green "Use this template" button** at the top of this repository
-2. **Create your own repository** with a descriptive name
-3. **Clone your new repository** to your computer
-4. **Follow the setup instructions** in [Student Setup Guide](docs/template-setup/STUDENT_SETUP_GUIDE.md)
-
-#### Option 2: Direct Clone (Not Recommended for Students)
-If you just want to try the project without classroom features:
+If you just want to try the project:
 ```bash
 git clone https://github.com/YOUR_INSTRUCTOR/TEMPLATE_REPO.git
 cd TEMPLATE_REPO
