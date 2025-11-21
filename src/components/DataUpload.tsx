@@ -312,15 +312,16 @@ const DataUpload = ({ onDataLoad }: DataUploadProps) => {
             Upload Your Data
           </CardTitle>
           <CardDescription className="font-light">
-            Need sample data?
+            Need sample data?&nbsp;
             <a
               href="https://www.investing.com/equities"
               target="_blank"
               rel="noopener noreferrer"
+              style={{ color: "#16a34a", textDecorationLine: "underline" }}
             >
               Click here
             </a>
-            to download free historical stock data (account required).
+            &nbsp;to download free historical stock data (account required).
           </CardDescription>
         </CardHeader>
 
