@@ -191,6 +191,8 @@ npm run dev
 - Click "Start Your Analysis" or drag and drop a CSV file
 - Supported format: CSV with headers
 - Required columns: `Date`, `Price`, `Open`, `High`, `Low`, `Vol.`, `Change%`
+- Recommended source for historic stock prices: https://www.investing.com/equities
+
 
 ### 2. Explore the Dashboard
 Navigate through different sections:
@@ -337,9 +339,4 @@ npm install
 3. Explore the professional analysis dashboard
 4. Try full-screen chart views
 5. Chat with AI about stock performance
-
----
-
-### Data Quality
-- Recommended source for historic stock prices: https://www.investing.com/equities
 
